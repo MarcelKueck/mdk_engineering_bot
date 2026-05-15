@@ -1,0 +1,221 @@
+{
+  "obligations": [
+    {
+      "id": "belege_woechentlich",
+      "title": "Belege erfassen",
+      "category": "buchhaltung",
+      "recurrence": "FREQ=WEEKLY;BYDAY=FR",
+      "lead_time_days": 0,
+      "action": "Belege fotografieren, in Lexware App zuordnen",
+      "tool": "Lexware Office App",
+      "mandatory": false,
+      "estimated_minutes": 10
+    },
+    {
+      "id": "rechnungen_versenden",
+      "title": "Rechnungen für Woche versenden",
+      "category": "umsatz",
+      "recurrence": "FREQ=WEEKLY;BYDAY=FR",
+      "lead_time_days": 0,
+      "action": "Toggl-Stunden review, Rechnungen in Lexware erstellen",
+      "tool": "Toggl + Lexware",
+      "mandatory": false,
+      "estimated_minutes": 20
+    },
+    {
+      "id": "mahnwesen",
+      "title": "Offene Posten und Mahnwesen prüfen",
+      "category": "liquiditaet",
+      "recurrence": "FREQ=WEEKLY;BYDAY=FR",
+      "lead_time_days": 0,
+      "action": "In Lexware unter Offene Posten überfällige Rechnungen prüfen",
+      "tool": "Lexware Office",
+      "mandatory": false,
+      "estimated_minutes": 5
+    },
+    {
+      "id": "steuerruecklage_monatlich",
+      "title": "Steuerrücklage 30% vom Monatsumsatz",
+      "category": "liquiditaet",
+      "recurrence": "FREQ=MONTHLY;BYMONTHDAY=1",
+      "lead_time_days": 0,
+      "action": "30% des Vormonats-Umsatzes auf Steuer-Tagesgeldkonto überweisen",
+      "tool": "N26",
+      "mandatory": false,
+      "estimated_minutes": 5
+    },
+    {
+      "id": "ustva_quartal",
+      "title": "USt-Voranmeldung Quartal",
+      "category": "steuer",
+      "recurrence": "FREQ=QUARTERLY;BYMONTH=1,4,7,10;BYMONTHDAY=10",
+      "lead_time_days": 7,
+      "action": "In Lexware UStVA für das abgelaufene Quartal berechnen, prüfen und an ELSTER senden",
+      "tool": "Lexware → ELSTER",
+      "mandatory": true,
+      "estimated_minutes": 15,
+      "penalty": "Verspätungszuschlag bis 10% der Zahllast, max. 25.000 €"
+    },
+    {
+      "id": "zm_quartal",
+      "title": "Zusammenfassende Meldung Quartal",
+      "category": "steuer",
+      "recurrence": "FREQ=QUARTERLY;BYMONTH=1,4,7,10;BYMONTHDAY=25",
+      "lead_time_days": 5,
+      "action": "Bei EU-B2B-Umsätzen im Quartal: USt-IDs + Netto-Beträge in ELSTER ZM-Formular eintragen",
+      "tool": "ELSTER",
+      "mandatory": "bei EU-B2B-Umsätzen",
+      "estimated_minutes": 10,
+      "skip_if": "keine EU-B2B-Umsätze im Quartal"
+    },
+    {
+      "id": "est_vorauszahlung",
+      "title": "ESt-Vorauszahlung",
+      "category": "steuer",
+      "recurrence": "FREQ=QUARTERLY;BYMONTH=3,6,9,12;BYMONTHDAY=10",
+      "lead_time_days": 3,
+      "action": "Liquidität prüfen — Lastschrift zieht automatisch ein, falls vom FA festgesetzt",
+      "tool": "passiv (SEPA-Lastschrift)",
+      "mandatory": "falls vom FA festgesetzt",
+      "estimated_minutes": 2,
+      "skip_if": "FA hat keine Vorauszahlung festgesetzt"
+    },
+    {
+      "id": "schaetzung_review",
+      "title": "Quartalsweises Review der USt-Schätzung",
+      "category": "planung",
+      "recurrence": "FREQ=QUARTERLY;BYMONTH=1,4,7,10;BYMONTHDAY=15",
+      "lead_time_days": 0,
+      "action": "Aktuelle Zahllast vs. Fragebogen-Schätzung (1500 €/Jahr) vergleichen — bei >20% Abweichung FA informieren",
+      "tool": "Lexware Reporting",
+      "mandatory": false,
+      "estimated_minutes": 20
+    },
+    {
+      "id": "stundensatz_review",
+      "title": "Stundensatz- und Pricing-Review",
+      "category": "business",
+      "recurrence": "FREQ=YEARLY;BYMONTH=1,7;BYMONTHDAY=15",
+      "lead_time_days": 0,
+      "action": "Stundensätze vs. Markt prüfen, Kundenrentabilität review",
+      "tool": "Lexware + Toggl",
+      "mandatory": false,
+      "estimated_minutes": 60
+    },
+    {
+      "id": "berufshaftpflicht_verlaengerung",
+      "title": "Berufshaftpflicht-Verlängerung prüfen",
+      "category": "versicherung",
+      "recurrence": "FREQ=YEARLY",
+      "lead_time_days": 60,
+      "action": "Police prüfen: Deckungssumme ausreichend? Tätigkeitsbeschreibung aktuell? Ggf. Anbieter vergleichen.",
+      "tool": "Versicherer-Portal",
+      "mandatory": true,
+      "estimated_minutes": 30,
+      "anchor_date_field": "vertragsablauf_berufshaftpflicht"
+    },
+    {
+      "id": "krankenkasse_einkommensnachweis",
+      "title": "KV-Einkommensnachweis einreichen",
+      "category": "versicherung",
+      "recurrence": "FREQ=YEARLY",
+      "lead_time_days": 14,
+      "action": "Aktuellen Steuerbescheid an Krankenversicherung senden",
+      "tool": "E-Mail/Post",
+      "mandatory": true,
+      "estimated_minutes": 15,
+      "trigger": "nach_erhalt_steuerbescheid"
+    },
+    {
+      "id": "inventur_jahresende",
+      "title": "Inventur Anlagevermögen + GWG-Check",
+      "category": "buchhaltung",
+      "recurrence": "FREQ=YEARLY;BYMONTH=12;BYMONTHDAY=31",
+      "lead_time_days": 14,
+      "action": "Anlagenverzeichnis prüfen, GWG-Käufe noch dieses Jahr abschließen für Sofortabschreibung",
+      "tool": "Lexware Anlagenverzeichnis",
+      "mandatory": true,
+      "estimated_minutes": 30
+    },
+    {
+      "id": "jahreserklaerung",
+      "title": "Jahressteuererklärung",
+      "category": "steuer",
+      "recurrence": "FREQ=YEARLY;BYMONTH=7;BYMONTHDAY=31",
+      "lead_time_days": 90,
+      "action": "Mit Steuerberater Termin machen ODER selbst beginnen (Anlage S, EÜR, USt-Jahreserklärung, Vorsorgeaufwand)",
+      "tool": "Steuerberater oder ELSTER + Lexware",
+      "mandatory": true,
+      "estimated_minutes": 180,
+      "penalty": "Verspätungszuschlag ab 10. Tag pro Monat 0,25% der Steuer, mind. 25 € pro Monat"
+    },
+    {
+      "id": "domain_verlaengerung",
+      "title": "Domain marcelkueck.dev Verlängerung prüfen",
+      "category": "infrastructure",
+      "recurrence": "FREQ=YEARLY",
+      "lead_time_days": 30,
+      "action": "Domain-Renewal prüfen, ggf. Mehrjahreslizenz buchen",
+      "tool": "Domain-Registrar",
+      "mandatory": true,
+      "estimated_minutes": 10,
+      "anchor_date_field": "domain_ablauf"
+    },
+    {
+      "id": "backups_buchhaltung",
+      "title": "Buchhaltungs-Backups exportieren",
+      "category": "infrastructure",
+      "recurrence": "FREQ=YEARLY;BYMONTH=1;BYMONTHDAY=15",
+      "lead_time_days": 0,
+      "action": "DATEV-Export aus Lexware, lokales + Cloud-Backup",
+      "tool": "Lexware Office",
+      "mandatory": true,
+      "estimated_minutes": 20
+    }
+  ],
+  "ad_hoc_rules": [
+    {
+      "id": "eu_kunde_vies_check",
+      "title": "USt-IdNr validieren vor EU-Rechnung",
+      "trigger": "neue_rechnung AND kunde.land != 'DE' AND kunde.land IN eu_laender",
+      "action": "VIES-Abfrage auf evatr.bff-online.de, PDF in Lexware archivieren",
+      "tool": "https://evatr.bff-online.de"
+    },
+    {
+      "id": "drittland_rechnung",
+      "title": "Drittland-Rechnung — Hinweise prüfen",
+      "trigger": "neue_rechnung AND kunde.land NOT IN eu_laender AND kunde.land != 'DE'",
+      "action": "Reverse-Charge-Hinweis '§ 3a UStG' aufnehmen, DBA prüfen, ggf. Wise nutzen",
+      "tool": "Lexware Rechnungsvorlage Drittland"
+    },
+    {
+      "id": "a1_bescheinigung",
+      "title": "A1-Bescheinigung beantragen",
+      "trigger": "reise_eu AND aufenthalt_tage > 1",
+      "lead_time_days": 14,
+      "action": "Bei Krankenversicherung A1 für den Reisezeitraum beantragen",
+      "tool": "Krankenversicherung"
+    },
+    {
+      "id": "scheinselbst_check",
+      "title": "Klärungsbogen DRV V0023 bei Hauptauftraggeber",
+      "trigger": "kunde.anteil_am_umsatz > 0.83",
+      "action": "DRV-Klärungsbogen V0023 einreichen (Scheinselbständigkeits-Check)",
+      "tool": "Deutsche Rentenversicherung"
+    },
+    {
+      "id": "kunde_zahlt_nicht",
+      "title": "Mahnung erstellen",
+      "trigger": "rechnung.faelligkeit + 14 Tage überschritten",
+      "action": "Zahlungserinnerung erstellen (Lexware-Vorlage), nach weiteren 14 Tagen 1. Mahnung",
+      "tool": "Lexware"
+    },
+    {
+      "id": "neues_saas_tool",
+      "title": "DSGVO-AVV abschließen + VVT updaten",
+      "trigger": "neues_tool MIT verarbeitung_pers_daten",
+      "action": "Auftragsverarbeitungsvertrag abschließen, Verarbeitungsverzeichnis (VVT) updaten",
+      "tool": "DSGVO-Doku"
+    }
+  ]
+}
