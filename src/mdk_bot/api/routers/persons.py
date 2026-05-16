@@ -28,9 +28,7 @@ async def list_persons(
 
 
 @router.post("", response_model=PersonRead, status_code=status.HTTP_201_CREATED)
-async def create_person(
-    payload: PersonCreate, session: AsyncSession = SessionDep
-) -> Person:
+async def create_person(payload: PersonCreate, session: AsyncSession = SessionDep) -> Person:
     person = Person(**payload.model_dump())
     session.add(person)
     await session.flush()

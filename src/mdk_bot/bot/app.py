@@ -16,11 +16,7 @@ def build_application() -> Application:
     settings = get_settings()
     if not settings.TELEGRAM_BOT_TOKEN:
         raise RuntimeError("TELEGRAM_BOT_TOKEN is not set.")
-    application = (
-        ApplicationBuilder()
-        .token(settings.TELEGRAM_BOT_TOKEN)
-        .build()
-    )
+    application = ApplicationBuilder().token(settings.TELEGRAM_BOT_TOKEN).build()
     register_handlers(application)
     return application
 

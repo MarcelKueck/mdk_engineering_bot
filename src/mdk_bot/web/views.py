@@ -107,9 +107,7 @@ async def dashboard(request: Request, session: AsyncSession = SessionDep) -> Res
         "persons": await session.scalar(select(func.count()).select_from(Person)),
         "organizations": await session.scalar(select(func.count()).select_from(Organization)),
         "projects_active": await session.scalar(
-            select(func.count())
-            .select_from(Project)
-            .where(Project.status == ProjectStatus.ACTIVE)
+            select(func.count()).select_from(Project).where(Project.status == ProjectStatus.ACTIVE)
         ),
         "tasks_open": await session.scalar(
             select(func.count())
@@ -134,9 +132,7 @@ async def dashboard(request: Request, session: AsyncSession = SessionDep) -> Res
         .limit(10)
     )
     upcoming = list(upcoming_q.scalars().all())
-    audit_q = await session.execute(
-        select(AuditLog).order_by(AuditLog.created_at.desc()).limit(10)
-    )
+    audit_q = await session.execute(select(AuditLog).order_by(AuditLog.created_at.desc()).limit(10))
     return templates.TemplateResponse(
         request,
         "dashboard.html",
@@ -186,9 +182,7 @@ async def persons_create(
         payload={"name": name},
     )
     rows = (await session.execute(select(Person).order_by(Person.name))).scalars().all()
-    return templates.TemplateResponse(
-        request, "persons/_list.html", {"persons": list(rows)}
-    )
+    return templates.TemplateResponse(request, "persons/_list.html", {"persons": list(rows)})
 
 
 @router.delete("/web/persons/{person_id}", response_class=HTMLResponse)
@@ -207,9 +201,7 @@ async def persons_delete(
             entity_id=str(person_id),
         )
     rows = (await session.execute(select(Person).order_by(Person.name))).scalars().all()
-    return templates.TemplateResponse(
-        request, "persons/_list.html", {"persons": list(rows)}
-    )
+    return templates.TemplateResponse(request, "persons/_list.html", {"persons": list(rows)})
 
 
 # ---------- Organizations
@@ -251,9 +243,7 @@ async def orgs_create(
         entity_id=str(org.id),
         payload={"name": name},
     )
-    rows = (
-        await session.execute(select(Organization).order_by(Organization.name))
-    ).scalars().all()
+    rows = (await session.execute(select(Organization).order_by(Organization.name))).scalars().all()
     return templates.TemplateResponse(
         request, "organizations/_list.html", {"organizations": list(rows)}
     )
@@ -274,9 +264,7 @@ async def orgs_delete(
             entity_type="organization",
             entity_id=str(org_id),
         )
-    rows = (
-        await session.execute(select(Organization).order_by(Organization.name))
-    ).scalars().all()
+    rows = (await session.execute(select(Organization).order_by(Organization.name))).scalars().all()
     return templates.TemplateResponse(
         request, "organizations/_list.html", {"organizations": list(rows)}
     )
@@ -294,9 +282,7 @@ async def projects_page(
     if search:
         stmt = stmt.where(Project.name.ilike(f"%{search}%"))
     rows = (await session.execute(stmt)).scalars().all()
-    orgs = (
-        await session.execute(select(Organization).order_by(Organization.name))
-    ).scalars().all()
+    orgs = (await session.execute(select(Organization).order_by(Organization.name))).scalars().all()
     return templates.TemplateResponse(
         request,
         "projects/index.html",
@@ -338,27 +324,25 @@ async def projects_create(
         payload={"name": name},
     )
     rows = (await session.execute(select(Project).order_by(Project.name))).scalars().all()
-    return templates.TemplateResponse(
-        request, "projects/_list.html", {"projects": list(rows)}
-    )
+    return templates.TemplateResponse(request, "projects/_list.html", {"projects": list(rows)})
 
 
 # ---------- Tasks
 
 
 @router.get("/web/tasks", response_class=HTMLResponse)
-async def tasks_page(
-    request: Request, session: AsyncSession = SessionDep
-) -> Response:
+async def tasks_page(request: Request, session: AsyncSession = SessionDep) -> Response:
     _require_login(request)
     rows = (
-        await session.execute(
-            select(Task).order_by(Task.due_date.asc().nulls_last(), Task.created_at.desc())
+        (
+            await session.execute(
+                select(Task).order_by(Task.due_date.asc().nulls_last(), Task.created_at.desc())
+            )
         )
-    ).scalars().all()
-    projects = (
-        await session.execute(select(Project).order_by(Project.name))
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
+    projects = (await session.execute(select(Project).order_by(Project.name))).scalars().all()
     return templates.TemplateResponse(
         request,
         "tasks/index.html",
@@ -390,10 +374,14 @@ async def tasks_create(
         payload={"title": title},
     )
     rows = (
-        await session.execute(
-            select(Task).order_by(Task.due_date.asc().nulls_last(), Task.created_at.desc())
+        (
+            await session.execute(
+                select(Task).order_by(Task.due_date.asc().nulls_last(), Task.created_at.desc())
+            )
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
     return templates.TemplateResponse(request, "tasks/_list.html", {"tasks": list(rows)})
 
 
@@ -415,10 +403,14 @@ async def tasks_complete(
             entity_id=str(task.id),
         )
     rows = (
-        await session.execute(
-            select(Task).order_by(Task.due_date.asc().nulls_last(), Task.created_at.desc())
+        (
+            await session.execute(
+                select(Task).order_by(Task.due_date.asc().nulls_last(), Task.created_at.desc())
+            )
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
     return templates.TemplateResponse(request, "tasks/_list.html", {"tasks": list(rows)})
 
 
@@ -426,9 +418,7 @@ async def tasks_complete(
 
 
 @router.get("/web/obligations", response_class=HTMLResponse)
-async def obligations_page(
-    request: Request, session: AsyncSession = SessionDep
-) -> Response:
+async def obligations_page(request: Request, session: AsyncSession = SessionDep) -> Response:
     _require_login(request)
     obligations: list[Obligation] = list(
         (await session.execute(select(Obligation).order_by(Obligation.category, Obligation.id)))
@@ -458,16 +448,12 @@ async def obligations_page(
 
 
 @router.get("/web/anchors", response_class=HTMLResponse)
-async def anchors_page(
-    request: Request, session: AsyncSession = SessionDep
-) -> Response:
+async def anchors_page(request: Request, session: AsyncSession = SessionDep) -> Response:
     _require_login(request)
     rows = (
-        await session.execute(select(AnchorDate).order_by(AnchorDate.field_name))
-    ).scalars().all()
-    return templates.TemplateResponse(
-        request, "anchors/index.html", {"anchors": list(rows)}
+        (await session.execute(select(AnchorDate).order_by(AnchorDate.field_name))).scalars().all()
     )
+    return templates.TemplateResponse(request, "anchors/index.html", {"anchors": list(rows)})
 
 
 @router.post("/web/anchors", response_class=HTMLResponse)
@@ -496,8 +482,6 @@ async def anchors_set(
         payload={"date_value": parsed.isoformat()},
     )
     rows = (
-        await session.execute(select(AnchorDate).order_by(AnchorDate.field_name))
-    ).scalars().all()
-    return templates.TemplateResponse(
-        request, "anchors/_list.html", {"anchors": list(rows)}
+        (await session.execute(select(AnchorDate).order_by(AnchorDate.field_name))).scalars().all()
     )
+    return templates.TemplateResponse(request, "anchors/_list.html", {"anchors": list(rows)})

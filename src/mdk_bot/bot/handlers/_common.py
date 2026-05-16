@@ -33,9 +33,7 @@ def with_error_reply(handler: Callable[..., Awaitable[Any]]) -> Callable[..., Aw
                 exc_info=True,
             )
             if update.message is not None:
-                await update.message.reply_text(
-                    "Etwas ist schiefgegangen. Schau in die Logs."
-                )
+                await update.message.reply_text("Etwas ist schiefgegangen. Schau in die Logs.")
             return None
 
     return wrapper

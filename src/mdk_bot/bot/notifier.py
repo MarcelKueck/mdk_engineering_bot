@@ -12,7 +12,6 @@ from typing import Final
 from telegram import Bot
 from telegram.constants import ParseMode
 
-from mdk_bot.capabilities.reminders.engine import Notifier
 from mdk_bot.config import get_settings
 from mdk_bot.shared.logging import get_logger
 

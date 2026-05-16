@@ -14,7 +14,7 @@ from datetime import date, datetime
 from typing import Any
 
 from sqlalchemy import (
-    ARRAY,
+    JSON,
     BigInteger,
     Boolean,
     CheckConstraint,
@@ -29,13 +29,31 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    Uuid,
     func,
 )
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.dialects.postgresql import ARRAY as PG_ARRAY
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.types import TypeEngine
 
 from mdk_bot.config import get_settings
 from mdk_bot.core.db import Base
+
+
+def JSONType() -> TypeEngine[Any]:
+    """JSONB on Postgres, generic JSON elsewhere — keeps tests SQLite-friendly."""
+    return JSON().with_variant(JSONB(), "postgresql")
+
+
+def StringArray() -> TypeEngine[Any]:
+    """ARRAY(String) on Postgres, JSON list elsewhere."""
+    return JSON().with_variant(PG_ARRAY(String()), "postgresql")
+
+
+def UUIDType() -> TypeEngine[Any]:
+    """Native UUID on Postgres, CHAR(36) elsewhere — driven by sa.Uuid."""
+    return Uuid(as_uuid=True)
 
 
 def _new_uuid() -> uuid.UUID:
@@ -102,19 +120,19 @@ class Organization(Base):
 
     __tablename__ = "organizations"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_new_uuid)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
     tenant_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), nullable=False, default=_default_tenant_id, index=True
+        UUIDType(), nullable=False, default=_default_tenant_id, index=True
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     legal_form: Mapped[str | None] = mapped_column(String(64))
     vat_id: Mapped[str | None] = mapped_column(String(64))
-    address: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    address: Mapped[dict[str, Any] | None] = mapped_column(JSONType())
     lexware_id: Mapped[str | None] = mapped_column(String(64), index=True)
     website: Mapped[str | None] = mapped_column(String(255))
     notes: Mapped[str | None] = mapped_column(Text)
-    tags: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False, default=list)
-    custom_fields: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    tags: Mapped[list[str]] = mapped_column(StringArray(), nullable=False, default=list)
+    custom_fields: Mapped[dict[str, Any]] = mapped_column(JSONType(), nullable=False, default=dict)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
@@ -131,20 +149,20 @@ class Person(Base):
 
     __tablename__ = "persons"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_new_uuid)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
     tenant_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), nullable=False, default=_default_tenant_id, index=True
+        UUIDType(), nullable=False, default=_default_tenant_id, index=True
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     email: Mapped[str | None] = mapped_column(String(255), index=True)
     phone: Mapped[str | None] = mapped_column(String(64))
     current_org_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="SET NULL")
+        UUIDType(), ForeignKey("organizations.id", ondelete="SET NULL")
     )
     linkedin_url: Mapped[str | None] = mapped_column(String(255))
     notes: Mapped[str | None] = mapped_column(Text)
-    tags: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False, default=list)
-    custom_fields: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    tags: Mapped[list[str]] = mapped_column(StringArray(), nullable=False, default=list)
+    custom_fields: Mapped[dict[str, Any]] = mapped_column(JSONType(), nullable=False, default=dict)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
@@ -160,13 +178,13 @@ class Project(Base):
 
     __tablename__ = "projects"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_new_uuid)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
     tenant_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), nullable=False, default=_default_tenant_id, index=True
+        UUIDType(), nullable=False, default=_default_tenant_id, index=True
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     customer_org_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="SET NULL")
+        UUIDType(), ForeignKey("organizations.id", ondelete="SET NULL")
     )
     status: Mapped[ProjectStatus] = mapped_column(
         Enum(ProjectStatus, name="project_status"), nullable=False, default=ProjectStatus.LEAD
@@ -176,8 +194,8 @@ class Project(Base):
     start_date: Mapped[date | None] = mapped_column(Date)
     end_date: Mapped[date | None] = mapped_column(Date)
     description: Mapped[str | None] = mapped_column(Text)
-    tags: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False, default=list)
-    custom_fields: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    tags: Mapped[list[str]] = mapped_column(StringArray(), nullable=False, default=list)
+    custom_fields: Mapped[dict[str, Any]] = mapped_column(JSONType(), nullable=False, default=dict)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
@@ -193,9 +211,9 @@ class Task(Base):
 
     __tablename__ = "tasks"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_new_uuid)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
     tenant_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), nullable=False, default=_default_tenant_id, index=True
+        UUIDType(), nullable=False, default=_default_tenant_id, index=True
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
@@ -205,13 +223,13 @@ class Task(Base):
     )
     priority: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
     project_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="SET NULL")
+        UUIDType(), ForeignKey("projects.id", ondelete="SET NULL")
     )
     person_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("persons.id", ondelete="SET NULL")
+        UUIDType(), ForeignKey("persons.id", ondelete="SET NULL")
     )
     obligation_instance_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("obligation_instances.id", ondelete="SET NULL")
+        UUIDType(), ForeignKey("obligation_instances.id", ondelete="SET NULL")
     )
     source: Mapped[TaskSource] = mapped_column(
         Enum(TaskSource, name="task_source"), nullable=False, default=TaskSource.MANUAL
@@ -221,9 +239,7 @@ class Task(Base):
     )
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
-    __table_args__ = (
-        CheckConstraint("priority BETWEEN 1 AND 5", name="ck_task_priority_range"),
-    )
+    __table_args__ = (CheckConstraint("priority BETWEEN 1 AND 5", name="ck_task_priority_range"),)
 
 
 class Obligation(Base):
@@ -244,7 +260,7 @@ class Obligation(Base):
     penalty: Mapped[str | None] = mapped_column(Text)
     skip_if: Mapped[str | None] = mapped_column(Text)
     anchor_date_field: Mapped[str | None] = mapped_column(String(128))
-    raw: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    raw: Mapped[dict[str, Any]] = mapped_column(JSONType(), nullable=False)
 
 
 class ObligationInstance(Base):
@@ -252,7 +268,7 @@ class ObligationInstance(Base):
 
     __tablename__ = "obligation_instances"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_new_uuid)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
     obligation_id: Mapped[str] = mapped_column(
         String(64), ForeignKey("obligations.id", ondelete="CASCADE"), nullable=False, index=True
     )
@@ -279,9 +295,9 @@ class NotificationLog(Base):
 
     __tablename__ = "notification_log"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_new_uuid)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
     obligation_instance_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        UUIDType(),
         ForeignKey("obligation_instances.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
@@ -328,7 +344,7 @@ class AdhocRules(Base):
     __tablename__ = "adhoc_rules"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, default=1)
-    payload: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, nullable=False, default=list)
+    payload: Mapped[list[dict[str, Any]]] = mapped_column(JSONType(), nullable=False, default=list)
 
     __table_args__ = (CheckConstraint("id = 1", name="ck_adhoc_rules_singleton"),)
 
@@ -338,14 +354,12 @@ class AuditLog(Base):
 
     __tablename__ = "audit_log"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_new_uuid)
-    actor: Mapped[AuditActor] = mapped_column(
-        Enum(AuditActor, name="audit_actor"), nullable=False
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
+    actor: Mapped[AuditActor] = mapped_column(Enum(AuditActor, name="audit_actor"), nullable=False)
     action: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
     entity_type: Mapped[str | None] = mapped_column(String(64), index=True)
     entity_id: Mapped[str | None] = mapped_column(String(64), index=True)
-    payload: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSONType(), nullable=False, default=dict)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now(), index=True
     )
@@ -361,14 +375,14 @@ class Conversation(Base):
     """Future: conversation thread (Telegram, email, chat) — see Phase 2."""
 
     __tablename__ = "conversations"
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_new_uuid)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
     tenant_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), nullable=False, default=_default_tenant_id
+        UUIDType(), nullable=False, default=_default_tenant_id
     )
     channel: Mapped[str] = mapped_column(String(32), nullable=False, default="telegram")
     external_id: Mapped[str | None] = mapped_column(String(128))
     subject: Mapped[str | None] = mapped_column(String(255))
-    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONType(), nullable=False, default=dict)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
@@ -378,13 +392,13 @@ class Message(Base):
     """Future: individual message in a :class:`Conversation`."""
 
     __tablename__ = "messages"
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_new_uuid)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
     conversation_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("conversations.id", ondelete="CASCADE"), nullable=False
+        UUIDType(), ForeignKey("conversations.id", ondelete="CASCADE"), nullable=False
     )
     role: Mapped[str] = mapped_column(String(32), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
-    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONType(), nullable=False, default=dict)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
@@ -394,14 +408,14 @@ class Document(Base):
     """Future: stored document (receipt, contract, scan) — see Phase 4."""
 
     __tablename__ = "documents"
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_new_uuid)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
     tenant_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), nullable=False, default=_default_tenant_id
+        UUIDType(), nullable=False, default=_default_tenant_id
     )
     kind: Mapped[str] = mapped_column(String(64), nullable=False)
     storage_key: Mapped[str] = mapped_column(String(512), nullable=False)
     mime_type: Mapped[str | None] = mapped_column(String(128))
-    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONType(), nullable=False, default=dict)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
@@ -411,91 +425,91 @@ class Transaction(Base):
     """Future: bank / payment transaction."""
 
     __tablename__ = "transactions"
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_new_uuid)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
     tenant_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), nullable=False, default=_default_tenant_id
+        UUIDType(), nullable=False, default=_default_tenant_id
     )
     booked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     amount: Mapped[float | None] = mapped_column(Numeric(12, 2))
     currency: Mapped[str | None] = mapped_column(String(8))
     counterparty: Mapped[str | None] = mapped_column(String(255))
     reference: Mapped[str | None] = mapped_column(String(255))
-    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONType(), nullable=False, default=dict)
 
 
 class Invoice(Base):
     """Future: invoice (mirror of Lexware record + augmentation)."""
 
     __tablename__ = "invoices"
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_new_uuid)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
     tenant_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), nullable=False, default=_default_tenant_id
+        UUIDType(), nullable=False, default=_default_tenant_id
     )
     lexware_id: Mapped[str | None] = mapped_column(String(64), index=True)
     number: Mapped[str | None] = mapped_column(String(64))
     customer_org_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="SET NULL")
+        UUIDType(), ForeignKey("organizations.id", ondelete="SET NULL")
     )
     issued_on: Mapped[date | None] = mapped_column(Date)
     due_on: Mapped[date | None] = mapped_column(Date)
     total: Mapped[float | None] = mapped_column(Numeric(12, 2))
     status: Mapped[str | None] = mapped_column(String(32))
-    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONType(), nullable=False, default=dict)
 
 
 class Receipt(Base):
     """Future: incoming receipt to attach to a transaction."""
 
     __tablename__ = "receipts"
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_new_uuid)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
     tenant_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), nullable=False, default=_default_tenant_id
+        UUIDType(), nullable=False, default=_default_tenant_id
     )
     vendor: Mapped[str | None] = mapped_column(String(255))
     amount: Mapped[float | None] = mapped_column(Numeric(12, 2))
     captured_on: Mapped[date | None] = mapped_column(Date)
     document_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("documents.id", ondelete="SET NULL")
+        UUIDType(), ForeignKey("documents.id", ondelete="SET NULL")
     )
-    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONType(), nullable=False, default=dict)
 
 
 class Event(Base):
     """Future: calendar event (Google Calendar mirror)."""
 
     __tablename__ = "events"
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_new_uuid)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
     tenant_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), nullable=False, default=_default_tenant_id
+        UUIDType(), nullable=False, default=_default_tenant_id
     )
     external_id: Mapped[str | None] = mapped_column(String(255))
     title: Mapped[str | None] = mapped_column(String(255))
     starts_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     ends_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONType(), nullable=False, default=dict)
 
 
 class KnowledgeItem(Base):
     """Future: long-term knowledge / RAG corpus. Phase 3+ populates embeddings."""
 
     __tablename__ = "knowledge_items"
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_new_uuid)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
     tenant_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), nullable=False, default=_default_tenant_id
+        UUIDType(), nullable=False, default=_default_tenant_id
     )
     title: Mapped[str | None] = mapped_column(String(255))
     body: Mapped[str | None] = mapped_column(Text)
     source: Mapped[str | None] = mapped_column(String(128))
-    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONType(), nullable=False, default=dict)
 
 
 class ReadingItem(Base):
     """Future: read-it-later queue."""
 
     __tablename__ = "reading_items"
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_new_uuid)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
     tenant_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), nullable=False, default=_default_tenant_id
+        UUIDType(), nullable=False, default=_default_tenant_id
     )
     url: Mapped[str] = mapped_column(String(1024), nullable=False)
     title: Mapped[str | None] = mapped_column(String(512))
@@ -509,28 +523,28 @@ class MedicalBill(Base):
     """Future: medical bill workflow (Beihilfe / private insurance reimbursement)."""
 
     __tablename__ = "medical_bills"
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_new_uuid)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
     tenant_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), nullable=False, default=_default_tenant_id
+        UUIDType(), nullable=False, default=_default_tenant_id
     )
     provider: Mapped[str | None] = mapped_column(String(255))
     amount: Mapped[float | None] = mapped_column(Numeric(12, 2))
     received_on: Mapped[date | None] = mapped_column(Date)
     status: Mapped[str | None] = mapped_column(String(32))
-    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONType(), nullable=False, default=dict)
 
 
 class ProviderCredential(Base):
     """Future: encrypted credentials for external providers (Lexware, Gmail, …)."""
 
     __tablename__ = "provider_credentials"
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_new_uuid)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
     tenant_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), nullable=False, default=_default_tenant_id
+        UUIDType(), nullable=False, default=_default_tenant_id
     )
     provider: Mapped[str] = mapped_column(String(64), nullable=False)
     encrypted_blob: Mapped[bytes | None] = mapped_column(LargeBinary)
-    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONType(), nullable=False, default=dict)
 
     __table_args__ = (
         UniqueConstraint("tenant_id", "provider", name="uq_provider_credential_tenant_provider"),

@@ -8,6 +8,7 @@ recording fake.
 
 from __future__ import annotations
 
+import uuid
 from dataclasses import dataclass
 from datetime import date, timedelta
 from typing import Protocol
@@ -74,13 +75,9 @@ async def _is_paused(session: AsyncSession, *, now: date) -> bool:
     return row.paused_until.date() >= now
 
 
-async def compute_due_dates(
-    session: AsyncSession, *, today: date
-) -> list[DueComputation]:
+async def compute_due_dates(session: AsyncSession, *, today: date) -> list[DueComputation]:
     """For every catalog obligation return its next due date (or ``None``)."""
-    obligations = list(
-        (await session.execute(select(Obligation))).scalars().all()
-    )
+    obligations = list((await session.execute(select(Obligation))).scalars().all())
     anchors = {
         row.field_name: row.date_value
         for row in (await session.execute(select(AnchorDate))).scalars().all()
@@ -104,7 +101,8 @@ async def compute_due_dates(
                 )
                 continue
             if anchor_field is not None:
-                due = next_anchor_occurrence(anchors[anchor_field], after=today - timedelta(days=1))
+                anchor_value = anchors[anchor_field]
+                due = next_anchor_occurrence(anchor_value, after=today - timedelta(days=14))
                 results.append(
                     DueComputation(
                         obligation_id=obligation.id,
@@ -116,8 +114,10 @@ async def compute_due_dates(
                 continue
 
         try:
+            # Look back 14 days so recently-overdue mandatory obligations
+            # still surface for escalation in case the scheduler missed a day.
             occurrences = next_occurrences(
-                obligation.recurrence, after=today - timedelta(days=1), count=1
+                obligation.recurrence, after=today - timedelta(days=14), count=1
             )
         except Exception as exc:
             log.error(
@@ -176,7 +176,7 @@ async def _get_or_create_instance(
 async def _record_notification(
     session: AsyncSession,
     *,
-    instance_id,
+    instance_id: uuid.UUID,
     label: str,
 ) -> bool:
     """Insert a row in ``notification_log``; return False if already sent."""
@@ -214,8 +214,7 @@ async def run_daily_check(
 
     computations = await compute_due_dates(session, today=today)
     obligations_by_id = {
-        row.id: row
-        for row in (await session.execute(select(Obligation))).scalars().all()
+        row.id: row for row in (await session.execute(select(Obligation))).scalars().all()
     }
 
     for comp in computations:
@@ -225,9 +224,7 @@ async def run_daily_check(
                 # Dedup against audit_log: one anchor-missing nudge per obligation per day.
                 from mdk_bot.core.models import AuditLog
 
-                start_of_today_utc = now_utc().replace(
-                    hour=0, minute=0, second=0, microsecond=0
-                )
+                start_of_today_utc = now_utc().replace(hour=0, minute=0, second=0, microsecond=0)
                 exists_stmt = (
                     select(AuditLog)
                     .where(AuditLog.action == "reminders.anchor_missing")
@@ -259,9 +256,7 @@ async def run_daily_check(
             continue
 
         label = _lead_time_label(today=today, due=comp.due_date)
-        if not await _record_notification(
-            session, instance_id=instance.id, label=label
-        ):
+        if not await _record_notification(session, instance_id=instance.id, label=label):
             continue
 
         text = format_notification(obligation, instance, today=today)

@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import UTC, timedelta
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query, status
@@ -38,7 +39,7 @@ async def list_obligations(
 
 
 @router.get("/adhoc")
-async def list_adhoc_rules(session: AsyncSession = SessionDep) -> list[dict]:
+async def list_adhoc_rules(session: AsyncSession = SessionDep) -> list[dict[str, Any]]:
     """Return the ad-hoc rule catalog (transcribed from obligations.json)."""
     row = await session.get(AdhocRules, 1)
     return row.payload if row else []
@@ -81,9 +82,7 @@ async def upcoming_instances(
 
 
 @instances_router.post("/{instance_id}/done", response_model=ObligationInstanceRead)
-async def mark_done(
-    instance_id: UUID, session: AsyncSession = SessionDep
-) -> ObligationInstance:
+async def mark_done(instance_id: UUID, session: AsyncSession = SessionDep) -> ObligationInstance:
     instance = await session.get(ObligationInstance, instance_id)
     if instance is None:
         raise HTTPException(status_code=404, detail="instance not found")
@@ -102,9 +101,7 @@ async def mark_done(
 
 
 @instances_router.post("/{instance_id}/skip", response_model=ObligationInstanceRead)
-async def mark_skip(
-    instance_id: UUID, session: AsyncSession = SessionDep
-) -> ObligationInstance:
+async def mark_skip(instance_id: UUID, session: AsyncSession = SessionDep) -> ObligationInstance:
     instance = await session.get(ObligationInstance, instance_id)
     if instance is None:
         raise HTTPException(status_code=404, detail="instance not found")
@@ -126,21 +123,23 @@ pause_router = APIRouter(prefix="/pause", tags=["bot"], dependencies=[AuthDep])
 
 
 @pause_router.get("")
-async def get_pause(session: AsyncSession = SessionDep) -> dict:
+async def get_pause(session: AsyncSession = SessionDep) -> dict[str, Any]:
     row = await session.get(PauseState, 1)
     return {"paused_until": row.paused_until.isoformat() if row and row.paused_until else None}
 
 
 @pause_router.put("", status_code=status.HTTP_200_OK)
-async def set_pause(payload: dict, session: AsyncSession = SessionDep) -> dict:
-    from datetime import datetime, timezone
+async def set_pause(
+    payload: dict[str, Any], session: AsyncSession = SessionDep
+) -> dict[str, Any]:
+    from datetime import datetime
 
     until = payload.get("paused_until")
     parsed: datetime | None = None
     if until:
         parsed = datetime.fromisoformat(until)
         if parsed.tzinfo is None:
-            parsed = parsed.replace(tzinfo=timezone.utc)
+            parsed = parsed.replace(tzinfo=UTC)
     row = await session.get(PauseState, 1)
     if row is None:
         row = PauseState(id=1, paused_until=parsed)

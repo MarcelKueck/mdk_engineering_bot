@@ -50,9 +50,7 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             lines.append("")
         lines.append("*Tasks*")
         for task in tasks:
-            lines.append(
-                f"• `{task['due_date']}` — {task['title']} (P{task['priority']})"
-            )
+            lines.append(f"• `{task['due_date']}` — {task['title']} (P{task['priority']})")
     if not instances and not tasks:
         lines.append("Nichts in den nächsten 7 Tagen. ✨")
 

@@ -28,9 +28,7 @@ async def list_projects(
 
 
 @router.post("", response_model=ProjectRead, status_code=status.HTTP_201_CREATED)
-async def create_project(
-    payload: ProjectCreate, session: AsyncSession = SessionDep
-) -> Project:
+async def create_project(payload: ProjectCreate, session: AsyncSession = SessionDep) -> Project:
     project = Project(**payload.model_dump())
     session.add(project)
     await session.flush()

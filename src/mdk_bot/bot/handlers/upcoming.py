@@ -36,7 +36,5 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     lines = [f"📋 *Nächste {len(instances)} Instanzen*", ""]
     for inst in instances:
-        lines.append(
-            f"`{inst['due_date']}` — `{inst['obligation_id']}` ({inst['status']})"
-        )
+        lines.append(f"`{inst['due_date']}` — `{inst['obligation_id']}` ({inst['status']})")
     await reply_md(update, "\n".join(lines))

@@ -30,9 +30,7 @@ async def set_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         return
 
     async with api_client_ctx() as api:
-        resp = await api.put(
-            f"/anchors/{field_name}", json={"date_value": parsed.isoformat()}
-        )
+        resp = await api.put(f"/anchors/{field_name}", json={"date_value": parsed.isoformat()})
         if resp.status_code != 200:
             await reply_md(update, fmt_http_error(resp))
             return

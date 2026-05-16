@@ -27,7 +27,9 @@ async def healthz() -> HealthStatus:
     redis_status = "ok"
     try:
         r = redis_lib.from_url(get_settings().REDIS_URL)
-        await r.ping()
+        ping_result = r.ping()
+        if hasattr(ping_result, "__await__"):
+            await ping_result
         await r.aclose()
     except Exception as exc:
         redis_status = f"error: {exc.__class__.__name__}"

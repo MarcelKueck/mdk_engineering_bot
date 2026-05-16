@@ -9,7 +9,6 @@ from mdk_bot.bot.handlers import (
     anchors,
     details,
     done,
-    help as help_handler,
     listing,
     pause,
     skip,
@@ -17,6 +16,9 @@ from mdk_bot.bot.handlers import (
     today,
     upcoming,
     week,
+)
+from mdk_bot.bot.handlers import (
+    help as help_handler,
 )
 
 

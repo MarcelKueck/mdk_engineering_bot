@@ -45,9 +45,7 @@ def is_business_day(day: date, calendar: holidays.HolidayBase | None = None) -> 
     return day not in cal
 
 
-def shift_for_holidays(
-    candidate: date, calendar: holidays.HolidayBase | None = None
-) -> date:
+def shift_for_holidays(candidate: date, calendar: holidays.HolidayBase | None = None) -> date:
     """Push ``candidate`` forward to the next business day if needed."""
     if calendar is None:
         years = sorted({candidate.year, candidate.year + 1})

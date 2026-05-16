@@ -7,7 +7,7 @@ treated as a bug. Use :func:`now` and :func:`today_local` instead of
 
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from zoneinfo import ZoneInfo
 
 from mdk_bot.config import get_settings
@@ -25,7 +25,7 @@ def now(tz: ZoneInfo | None = None) -> datetime:
 
 def now_utc() -> datetime:
     """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def today_local() -> date:

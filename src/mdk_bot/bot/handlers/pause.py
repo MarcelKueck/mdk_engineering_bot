@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import timedelta, timezone
+from datetime import UTC, timedelta
 
 from telegram import Update
 from telegram.ext import ContextTypes
@@ -25,12 +25,10 @@ async def pause_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     except ValueError:
         hours = 24
     hours = max(1, min(hours, 24 * 30))
-    until = now_utc().astimezone(timezone.utc) + timedelta(hours=hours)
+    until = now_utc().astimezone(UTC) + timedelta(hours=hours)
 
     async with api_client_ctx() as api:
-        resp = await api.put(
-            "/pause", json={"paused_until": until.isoformat()}
-        )
+        resp = await api.put("/pause", json={"paused_until": until.isoformat()})
         if resp.status_code != 200:
             await reply_md(update, fmt_http_error(resp))
             return

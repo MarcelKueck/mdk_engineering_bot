@@ -59,9 +59,7 @@ def _normalize_mandatory(value: bool | str) -> tuple[bool, str | None]:
     return True, value
 
 
-async def load_obligations_from_file(
-    session: AsyncSession, path: Path | str
-) -> tuple[int, int]:
+async def load_obligations_from_file(session: AsyncSession, path: Path | str) -> tuple[int, int]:
     """Upsert obligations + ad-hoc rules from ``path``.
 
     Returns ``(obligations_count, adhoc_rule_count)``.
@@ -76,10 +74,7 @@ async def load_obligations_from_file(
         adhoc=len(catalog.ad_hoc_rules),
     )
 
-    existing_ids = {
-        row[0]
-        for row in (await session.execute(select(Obligation.id))).all()
-    }
+    existing_ids = {row[0] for row in (await session.execute(select(Obligation.id))).all()}
     seen_ids: set[str] = set()
 
     for spec in catalog.obligations:

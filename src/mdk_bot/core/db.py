@@ -26,7 +26,14 @@ _sessionmaker: async_sessionmaker[AsyncSession] | None = None
 
 
 class Base(DeclarativeBase):
-    """SQLAlchemy declarative base for every ORM model."""
+    """SQLAlchemy declarative base for every ORM model.
+
+    ``eager_defaults`` makes SA re-read server-generated defaults after
+    INSERT/UPDATE so that ``updated_at`` (driven by ``onupdate=func.now()``)
+    is visible to the calling code without an explicit refresh.
+    """
+
+    __mapper_args__ = {"eager_defaults": True}
 
 
 def get_engine() -> AsyncEngine:
