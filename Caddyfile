@@ -1,0 +1,21 @@
+{$BOT_DOMAIN} {
+    encode gzip
+
+    @api path /api/* /healthz /login /web /web/*
+    handle @api {
+        reverse_proxy api:8000
+    }
+
+    handle / {
+        redir /web/ permanent
+    }
+
+    handle {
+        reverse_proxy api:8000
+    }
+
+    log {
+        output stdout
+        format console
+    }
+}

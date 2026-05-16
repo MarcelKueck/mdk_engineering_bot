@@ -1,0 +1,94 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mdk
+      POSTGRES_PASSWORD: mdk
+      POSTGRES_DB: mdk
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mdk -d mdk"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: uv run uvicorn mdk_bot.api.app:app --host 0.0.0.0 --port 8000 --reload
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://mdk:mdk@db:5432/mdk
+      DATABASE_URL_SYNC: postgresql+psycopg://mdk:mdk@db:5432/mdk
+      REDIS_URL: redis://redis:6379/0
+      INTERNAL_API_URL: http://api:8000/api/v1
+    volumes:
+      - ./:/app
+      - uploads_data:/app/uploads
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: uv run python -m mdk_bot bot
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://mdk:mdk@db:5432/mdk
+      REDIS_URL: redis://redis:6379/0
+      INTERNAL_API_URL: http://api:8000/api/v1
+    volumes:
+      - ./:/app
+    depends_on:
+      api:
+        condition: service_healthy
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: uv run python -m mdk_bot scheduler
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://mdk:mdk@db:5432/mdk
+      DATABASE_URL_SYNC: postgresql+psycopg://mdk:mdk@db:5432/mdk
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - ./:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
+  uploads_data:
