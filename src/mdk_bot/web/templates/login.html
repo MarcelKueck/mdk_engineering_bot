@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Login · MDK Bot{% endblock %}
+{% block content %}
+<div class="max-w-sm mx-auto mt-12 bg-white rounded-lg shadow p-6 border border-slate-200">
+    <h1 class="text-xl font-semibold mb-4">Sign in</h1>
+    {% if error %}<p class="text-red-600 text-sm mb-3">{{ error }}</p>{% endif %}
+    <form action="/login" method="post" class="space-y-3">
+        <label class="block">
+            <span class="text-sm text-slate-600">Web session token</span>
+            <input type="password" name="token" required autofocus
+                class="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"/>
+        </label>
+        <button class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 text-sm">
+            Sign in
+        </button>
+    </form>
+</div>
+{% endblock %}

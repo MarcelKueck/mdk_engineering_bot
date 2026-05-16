@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Obligations · MDK Bot{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Obligations</h1>
+
+<section class="bg-white border border-slate-200 rounded-lg p-4 mb-6">
+    <h2 class="font-semibold mb-3 text-sm">Upcoming instances (next 90 days)</h2>
+    {% if upcoming %}
+    <ul class="text-sm space-y-1">
+        {% for inst in upcoming %}
+        <li class="flex justify-between border-b border-slate-100 py-1">
+            <span class="font-mono text-xs text-slate-500 w-24">{{ inst.due_date }}</span>
+            <span class="flex-1">{{ inst.obligation_id }}</span>
+            <span class="text-xs">{{ inst.status.value }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-sm text-slate-500">No upcoming instances. Run the scheduler to populate.</p>
+    {% endif %}
+</section>
+
+<section class="bg-white border border-slate-200 rounded-lg overflow-hidden">
+    <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500">
+            <tr>
+                <th class="text-left px-3 py-2">ID</th>
+                <th class="text-left px-3 py-2">Title</th>
+                <th class="text-left px-3 py-2">Category</th>
+                <th class="text-left px-3 py-2">Recurrence</th>
+                <th class="text-left px-3 py-2">Lead</th>
+                <th class="text-left px-3 py-2">Pflicht</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for o in obligations %}
+            <tr class="border-t border-slate-100">
+                <td class="px-3 py-2 font-mono text-xs">{{ o.id }}</td>
+                <td class="px-3 py-2">{{ o.title }}</td>
+                <td class="px-3 py-2 text-slate-600">{{ o.category }}</td>
+                <td class="px-3 py-2 font-mono text-xs text-slate-500">{{ o.recurrence }}</td>
+                <td class="px-3 py-2 text-slate-600">{{ o.lead_time_days }}d</td>
+                <td class="px-3 py-2">{% if o.mandatory %}✓{% else %}—{% endif %}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

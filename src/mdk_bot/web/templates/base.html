@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MDK Bot{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+{% if request.url.path != "/web/login" %}
+<header class="bg-white border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center gap-4">
+        <a href="/web/" class="font-semibold text-lg">MDK Bot</a>
+        <nav class="flex flex-wrap gap-3 text-sm">
+            <a href="/web/" class="hover:text-blue-600">Dashboard</a>
+            <a href="/web/persons" class="hover:text-blue-600">Persons</a>
+            <a href="/web/organizations" class="hover:text-blue-600">Orgs</a>
+            <a href="/web/projects" class="hover:text-blue-600">Projects</a>
+            <a href="/web/tasks" class="hover:text-blue-600">Tasks</a>
+            <a href="/web/obligations" class="hover:text-blue-600">Obligations</a>
+            <a href="/web/anchors" class="hover:text-blue-600">Anchors</a>
+        </nav>
+        <form action="/logout" method="post" class="ml-auto">
+            <button class="text-sm text-slate-500 hover:text-red-600">Logout</button>
+        </form>
+    </div>
+</header>
+{% endif %}
+
+<main class="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
+{% block content %}{% endblock %}
+</main>
+
+<footer class="border-t border-slate-200 bg-white">
+    <div class="max-w-6xl mx-auto px-4 py-3 text-xs text-slate-400">
+        MDK Engineering Bot · personal operations platform
+    </div>
+</footer>
+</body>
+</html>

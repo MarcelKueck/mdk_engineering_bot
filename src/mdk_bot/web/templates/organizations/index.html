@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Organizations · MDK Bot{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Organizations</h1>
+
+<section class="bg-white border border-slate-200 rounded-lg p-4 mb-6">
+    <h2 class="font-semibold mb-2 text-sm">New organization</h2>
+    <form hx-post="/web/organizations" hx-target="#orgs-list" hx-swap="outerHTML"
+          class="grid grid-cols-1 md:grid-cols-4 gap-2">
+        <input name="name" placeholder="Name" required
+               class="border border-slate-300 rounded px-2 py-1 text-sm" />
+        <input name="legal_form" placeholder="Legal form (GmbH, e.K., …)"
+               class="border border-slate-300 rounded px-2 py-1 text-sm" />
+        <input name="vat_id" placeholder="VAT ID"
+               class="border border-slate-300 rounded px-2 py-1 text-sm" />
+        <button class="bg-blue-600 text-white text-sm rounded px-3 py-1 hover:bg-blue-700">Add</button>
+    </form>
+</section>
+
+{% include "organizations/_list.html" %}
+{% endblock %}
