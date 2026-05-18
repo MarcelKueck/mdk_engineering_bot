@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Persons · MDK Bot{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-4">
+    <h1 class="text-2xl font-semibold">Persons</h1>
+</div>
+
+<section class="bg-white border border-slate-200 rounded-lg p-4 mb-6">
+    <h2 class="font-semibold mb-2 text-sm">New person</h2>
+    <form hx-post="/web/persons" hx-target="#persons-list" hx-swap="outerHTML"
+          class="grid grid-cols-1 md:grid-cols-4 gap-2">
+        <input name="name" placeholder="Name" required
+               class="border border-slate-300 rounded px-2 py-1 text-sm" />
+        <input name="email" placeholder="Email" type="email"
+               class="border border-slate-300 rounded px-2 py-1 text-sm" />
+        <input name="phone" placeholder="Phone"
+               class="border border-slate-300 rounded px-2 py-1 text-sm" />
+        <button class="bg-blue-600 text-white text-sm rounded px-3 py-1 hover:bg-blue-700">Add</button>
+    </form>
+</section>
+
+{% include "persons/_list.html" %}
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · MDK Bot{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-6">Dashboard</h1>
+
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white rounded-lg p-4 border border-slate-200">
+        <div class="text-xs text-slate-500 uppercase">Persons</div>
+        <div class="text-2xl font-semibold mt-1">{{ counts.persons or 0 }}</div>
+    </div>
+    <div class="bg-white rounded-lg p-4 border border-slate-200">
+        <div class="text-xs text-slate-500 uppercase">Organizations</div>
+        <div class="text-2xl font-semibold mt-1">{{ counts.organizations or 0 }}</div>
+    </div>
+    <div class="bg-white rounded-lg p-4 border border-slate-200">
+        <div class="text-xs text-slate-500 uppercase">Active projects</div>
+        <div class="text-2xl font-semibold mt-1">{{ counts.projects_active or 0 }}</div>
+    </div>
+    <div class="bg-white rounded-lg p-4 border border-slate-200">
+        <div class="text-xs text-slate-500 uppercase">Open tasks</div>
+        <div class="text-2xl font-semibold mt-1">{{ counts.tasks_open or 0 }}</div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <section class="bg-white rounded-lg border border-slate-200 p-4">
+        <h2 class="font-semibold mb-3">Upcoming obligations (7 days)</h2>
+        {% if upcoming %}
+        <ul class="text-sm space-y-2">
+            {% for inst in upcoming %}
+            <li class="flex justify-between border-b border-slate-100 pb-1">
+                <span class="font-mono text-xs text-slate-500">{{ inst.due_date }}</span>
+                <span>{{ inst.obligation_id }}</span>
+                <span class="text-xs">{{ inst.status.value }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-sm text-slate-500">Nothing in the next 7 days.</p>
+        {% endif %}
+    </section>
+
+    <section class="bg-white rounded-lg border border-slate-200 p-4">
+        <h2 class="font-semibold mb-3">Recent activity</h2>
+        {% if audit %}
+        <ul class="text-sm space-y-2">
+            {% for entry in audit %}
+            <li class="border-b border-slate-100 pb-1">
+                <span class="font-mono text-xs text-slate-400">{{ entry.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                <span class="font-semibold">{{ entry.actor.value }}</span>
+                <span class="text-slate-600">{{ entry.action }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-sm text-slate-500">No activity yet.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

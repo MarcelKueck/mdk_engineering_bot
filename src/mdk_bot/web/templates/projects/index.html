@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Projects · MDK Bot{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Projects</h1>
+
+<section class="bg-white border border-slate-200 rounded-lg p-4 mb-6">
+    <h2 class="font-semibold mb-2 text-sm">New project</h2>
+    <form hx-post="/web/projects" hx-target="#projects-list" hx-swap="outerHTML"
+          class="grid grid-cols-1 md:grid-cols-5 gap-2">
+        <input name="name" placeholder="Name" required
+               class="border border-slate-300 rounded px-2 py-1 text-sm" />
+        <select name="customer_org_id"
+                class="border border-slate-300 rounded px-2 py-1 text-sm">
+            <option value="">— Customer org —</option>
+            {% for org in organizations %}
+                <option value="{{ org.id }}">{{ org.name }}</option>
+            {% endfor %}
+        </select>
+        <select name="status_value"
+                class="border border-slate-300 rounded px-2 py-1 text-sm">
+            {% for s in statuses %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+        </select>
+        <input name="hourly_rate" placeholder="€/h" type="number" step="0.01"
+               class="border border-slate-300 rounded px-2 py-1 text-sm" />
+        <button class="bg-blue-600 text-white text-sm rounded px-3 py-1 hover:bg-blue-700">Add</button>
+    </form>
+</section>
+
+{% include "projects/_list.html" %}
+{% endblock %}

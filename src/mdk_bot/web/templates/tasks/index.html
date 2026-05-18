@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Tasks · MDK Bot{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Tasks</h1>
+
+<section class="bg-white border border-slate-200 rounded-lg p-4 mb-6">
+    <h2 class="font-semibold mb-2 text-sm">New task</h2>
+    <form hx-post="/web/tasks" hx-target="#tasks-list" hx-swap="outerHTML"
+          class="grid grid-cols-1 md:grid-cols-5 gap-2">
+        <input name="title" placeholder="Title" required
+               class="border border-slate-300 rounded px-2 py-1 text-sm" />
+        <input name="due_date" type="date"
+               class="border border-slate-300 rounded px-2 py-1 text-sm" />
+        <select name="priority"
+                class="border border-slate-300 rounded px-2 py-1 text-sm">
+            {% for n in [1,2,3,4,5] %}<option value="{{ n }}" {% if n == 3 %}selected{% endif %}>P{{ n }}</option>{% endfor %}
+        </select>
+        <select name="project_id"
+                class="border border-slate-300 rounded px-2 py-1 text-sm">
+            <option value="">— Project —</option>
+            {% for p in projects %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}
+        </select>
+        <button class="bg-blue-600 text-white text-sm rounded px-3 py-1 hover:bg-blue-700">Add</button>
+    </form>
+</section>
+
+{% include "tasks/_list.html" %}
+{% endblock %}

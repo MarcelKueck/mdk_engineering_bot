@@ -1,0 +1,26 @@
+<div id="anchors-list" class="bg-white border border-slate-200 rounded-lg overflow-hidden">
+    {% if anchors %}
+    <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500">
+            <tr>
+                <th class="text-left px-3 py-2">Field</th>
+                <th class="text-left px-3 py-2">Date</th>
+                <th class="text-left px-3 py-2">Set by</th>
+                <th class="text-left px-3 py-2">Set at</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for a in anchors %}
+            <tr class="border-t border-slate-100">
+                <td class="px-3 py-2 font-mono text-xs">{{ a.field_name }}</td>
+                <td class="px-3 py-2 font-mono">{{ a.date_value }}</td>
+                <td class="px-3 py-2 text-slate-600">{{ a.set_by }}</td>
+                <td class="px-3 py-2 text-slate-500 text-xs">{{ a.set_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="p-4 text-sm text-slate-500">No anchors set yet.</p>
+    {% endif %}
+</div>

@@ -1,0 +1,34 @@
+<div id="tasks-list" class="bg-white border border-slate-200 rounded-lg overflow-hidden">
+    {% if tasks %}
+    <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500">
+            <tr>
+                <th class="text-left px-3 py-2">Title</th>
+                <th class="text-left px-3 py-2">Due</th>
+                <th class="text-left px-3 py-2">Pri</th>
+                <th class="text-left px-3 py-2">Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for t in tasks %}
+            <tr class="border-t border-slate-100">
+                <td class="px-3 py-2">{{ t.title }}</td>
+                <td class="px-3 py-2 font-mono text-xs text-slate-500">{{ t.due_date or "" }}</td>
+                <td class="px-3 py-2 text-slate-600">P{{ t.priority }}</td>
+                <td class="px-3 py-2 text-slate-600">{{ t.status.value }}</td>
+                <td class="px-3 py-2 text-right">
+                    {% if t.status.value in ['todo', 'doing'] %}
+                    <button hx-post="/web/tasks/{{ t.id }}/complete"
+                            hx-target="#tasks-list" hx-swap="outerHTML"
+                            class="text-green-600 hover:text-green-800 text-xs">Done</button>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="p-4 text-sm text-slate-500">No tasks yet.</p>
+    {% endif %}
+</div>
