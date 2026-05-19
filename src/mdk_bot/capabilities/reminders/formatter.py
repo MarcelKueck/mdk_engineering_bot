@@ -9,10 +9,10 @@ from mdk_bot.core.models import Obligation, ObligationInstance
 
 def _mandatory_line(obligation: Obligation) -> str:
     if obligation.mandatory_label:
-        return f"⚠️ PFLICHT ({obligation.mandatory_label})"
+        return f"⚠️ MANDATORY ({obligation.mandatory_label})"
     if obligation.mandatory:
-        return "⚠️ PFLICHT"
-    return "📌 Empfohlen"
+        return "⚠️ MANDATORY"
+    return "📌 Recommended"
 
 
 def format_notification(
@@ -26,27 +26,27 @@ def format_notification(
     lines: list[str] = []
     lines.append(f"🔔 *{obligation.title}*")
     lines.append("")
-    lines.append(f"⏰ Fällig: `{instance.due_date.isoformat()}`")
-    lines.append(f"📁 Kategorie: {obligation.category}")
-    lines.append(f"⏱️ Aufwand: ~{obligation.estimated_minutes} Min")
+    lines.append(f"⏰ Due: `{instance.due_date.isoformat()}`")
+    lines.append(f"📁 Category: {obligation.category}")
+    lines.append(f"⏱️ Effort: ~{obligation.estimated_minutes} min")
     lines.append("")
-    lines.append(f"📋 Was zu tun ist: {obligation.action}")
+    lines.append(f"📋 What to do: {obligation.action}")
     lines.append(f"🛠️ {obligation.tool}")
     lines.append("")
     lines.append(_mandatory_line(obligation))
     if obligation.penalty:
-        lines.append(f"💸 Strafe bei Versäumnis: {obligation.penalty}")
+        lines.append(f"💸 Penalty if missed: {obligation.penalty}")
 
     if obligation.id == "zm_quartal":
         lines.append("")
-        lines.append("Falls keine EU-B2B-Umsätze in diesem Zeitraum: /skip zm_quartal")
+        lines.append("If no EU B2B sales this period: /skip zm_quartal")
     elif obligation.skip_if:
         lines.append("")
-        lines.append(f"_Ggf. überspringen: {obligation.skip_if}_")
+        lines.append(f"_May be skipped: {obligation.skip_if}_")
 
     lines.append("")
-    lines.append(f"Erledigt? `/done {obligation.id}`")
-    lines.append(f"Überspringen? `/skip {obligation.id}`")
+    lines.append(f"Done? `/done {obligation.id}`")
+    lines.append(f"Skip? `/skip {obligation.id}`")
 
     return "\n".join(lines)
 
@@ -55,7 +55,7 @@ def format_anchor_missing(obligation: Obligation) -> str:
     """Weekly nudge when an anchor-driven obligation has no anchor set."""
     field = obligation.anchor_date_field or "<unknown>"
     return (
-        f"ℹ️ *{obligation.title}* hat kein gesetztes Anker-Datum.\n"
-        f"Bitte setze `{field}` per `/anchor {field} YYYY-MM-DD`, "
-        f"damit ich rechtzeitig erinnern kann."
+        f"ℹ️ *{obligation.title}* has no anchor date set.\n"
+        f"Please set `{field}` via `/anchor {field} YYYY-MM-DD` "
+        f"so I can remind you in time."
     )

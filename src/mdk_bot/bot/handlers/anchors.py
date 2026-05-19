@@ -26,7 +26,7 @@ async def set_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     try:
         parsed = date.fromisoformat(value)
     except ValueError:
-        await reply_md(update, "Datum muss als `YYYY-MM-DD` angegeben werden.")
+        await reply_md(update, "Date must be in `YYYY-MM-DD` format.")
         return
 
     async with api_client_ctx() as api:
@@ -35,7 +35,7 @@ async def set_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
             await reply_md(update, fmt_http_error(resp))
             return
 
-    await reply_md(update, f"⚓ Anker gesetzt: `{field_name}` = `{parsed.isoformat()}`")
+    await reply_md(update, f"⚓ Anchor set: `{field_name}` = `{parsed.isoformat()}`")
 
 
 @operator_handler
@@ -49,9 +49,9 @@ async def list_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
     anchors = resp.json()
     if not anchors:
-        await reply_md(update, "Keine Anker gesetzt.")
+        await reply_md(update, "No anchors set.")
         return
-    lines = ["⚓ *Anker-Daten*", ""]
+    lines = ["⚓ *Anchor dates*", ""]
     for a in anchors:
         lines.append(f"• `{a['field_name']}` = `{a['date_value']}`")
     await reply_md(update, "\n".join(lines))

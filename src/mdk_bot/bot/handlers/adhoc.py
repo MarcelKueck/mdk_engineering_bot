@@ -23,9 +23,9 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             return
     rules = resp.json()
     if not rules:
-        await reply_md(update, "Keine Ad-hoc-Regeln definiert.")
+        await reply_md(update, "No ad-hoc rules defined.")
         return
-    lines = ["📐 *Ad-hoc-Regeln*", ""]
+    lines = ["📐 *Ad-hoc rules*", ""]
     for rule in rules:
         lines.append(f"• *{rule.get('title', rule.get('id'))}* (`{rule.get('id')}`)")
         if rule.get("trigger"):
