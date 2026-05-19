@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Finance · MDK Bot{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-4">
+    <h1 class="text-2xl font-semibold">Finance</h1>
+    <span class="text-sm text-slate-500">Open: {{ open_count }}</span>
+</div>
+
+<section class="bg-white border border-slate-200 rounded-lg overflow-hidden mb-6">
+    <h2 class="font-semibold p-4 border-b border-slate-100 text-sm">Invoices (latest 50)</h2>
+    {% if invoices %}
+    <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500">
+            <tr>
+                <th class="text-left px-3 py-2">Number</th>
+                <th class="text-left px-3 py-2">Issued</th>
+                <th class="text-left px-3 py-2">Due</th>
+                <th class="text-right px-3 py-2">Gross</th>
+                <th class="text-left px-3 py-2">Status</th>
+                <th class="text-left px-3 py-2">Mahnstufe</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for i in invoices %}
+            <tr class="border-t border-slate-100">
+                <td class="px-3 py-2">{{ i.number or "-" }}</td>
+                <td class="px-3 py-2 text-slate-600">{{ i.issue_date.isoformat() if i.issue_date else "" }}</td>
+                <td class="px-3 py-2 text-slate-600">{{ i.due_date.isoformat() if i.due_date else "" }}</td>
+                <td class="px-3 py-2 text-right">{{ "%.2f" % (i.total_gross or 0) }} {{ i.currency }}</td>
+                <td class="px-3 py-2">{{ i.status.value }}</td>
+                <td class="px-3 py-2">{{ i.mahnstufe }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="p-4 text-sm text-slate-500">No invoices yet. Configure Lexware and run /sync_now.</p>
+    {% endif %}
+</section>
+
+<section class="bg-white border border-slate-200 rounded-lg overflow-hidden">
+    <h2 class="font-semibold p-4 border-b border-slate-100 text-sm">Receipts (latest 50)</h2>
+    {% if receipts %}
+    <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500">
+            <tr>
+                <th class="text-left px-3 py-2">Date</th>
+                <th class="text-right px-3 py-2">Total</th>
+                <th class="text-right px-3 py-2">VAT</th>
+                <th class="text-left px-3 py-2">Category</th>
+                <th class="text-left px-3 py-2">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for r in receipts %}
+            <tr class="border-t border-slate-100">
+                <td class="px-3 py-2">{{ r.date.isoformat() if r.date else "" }}</td>
+                <td class="px-3 py-2 text-right">{{ "%.2f" % (r.total or 0) }}</td>
+                <td class="px-3 py-2 text-right">{{ "%.2f" % (r.vat or 0) }}</td>
+                <td class="px-3 py-2 text-slate-600">{{ r.category or "" }}</td>
+                <td class="px-3 py-2">{{ r.status.value }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="p-4 text-sm text-slate-500">No receipts yet.</p>
+    {% endif %}
+</section>
+{% endblock %}

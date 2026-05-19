@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Time · MDK Bot{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-4">
+    <h1 class="text-2xl font-semibold">Time entries</h1>
+    <span class="text-sm text-slate-500">
+        This week: <strong>{{ summary.total }}h</strong> · billable {{ summary.billable }}h ·
+        billed {{ summary.billed }}h · unbilled value <strong>{{ unbilled_value }} EUR</strong>
+    </span>
+</div>
+
+<section class="bg-white border border-slate-200 rounded-lg p-4 mb-6">
+    <h2 class="font-semibold mb-2 text-sm">Log time</h2>
+    <form hx-post="/web/time" hx-target="#time-list" hx-swap="outerHTML"
+          class="grid grid-cols-1 md:grid-cols-5 gap-2">
+        <input name="entry_date" type="date" required
+               class="border border-slate-300 rounded px-2 py-1 text-sm" />
+        <input name="hours" placeholder="Hours" required
+               class="border border-slate-300 rounded px-2 py-1 text-sm" />
+        <select name="project_id" class="border border-slate-300 rounded px-2 py-1 text-sm">
+            <option value="">(no project)</option>
+            {% for p in projects %}
+            <option value="{{ p.id }}">{{ p.name }}</option>
+            {% endfor %}
+        </select>
+        <input name="note" placeholder="Note"
+               class="border border-slate-300 rounded px-2 py-1 text-sm md:col-span-1" />
+        <button class="bg-blue-600 text-white text-sm rounded px-3 py-1 hover:bg-blue-700">Log</button>
+    </form>
+</section>
+
+{% include "time/_list.html" %}
+{% endblock %}
