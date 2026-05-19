@@ -17,6 +17,8 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mdk_bot.api.deps import SessionDep
+from mdk_bot.capabilities.expenses.engine import monthly_burn
+from mdk_bot.capabilities.timetracking.engine import hours_summary, unbilled_value
 from mdk_bot.core.audit import record
 from mdk_bot.core.auth import (
     SESSION_COOKIE,
@@ -28,6 +30,9 @@ from mdk_bot.core.models import (
     AnchorDate,
     AuditActor,
     AuditLog,
+    ExpenseCadence,
+    Invoice,
+    InvoiceStatus,
     Obligation,
     ObligationInstance,
     ObligationInstanceStatus,
@@ -35,8 +40,11 @@ from mdk_bot.core.models import (
     Person,
     Project,
     ProjectStatus,
+    Receipt,
+    RecurringExpense,
     Task,
     TaskStatus,
+    TimeEntry,
 )
 from mdk_bot.core.time import now_utc, today_local
 from mdk_bot.web.assets import TEMPLATE_DIR
@@ -485,3 +493,202 @@ async def anchors_set(
         (await session.execute(select(AnchorDate).order_by(AnchorDate.field_name))).scalars().all()
     )
     return templates.TemplateResponse(request, "anchors/_list.html", {"anchors": list(rows)})
+
+
+# ---------- Finance (Phase 2)
+
+
+@router.get("/web/finance", response_class=HTMLResponse)
+async def finance_page(request: Request, session: AsyncSession = SessionDep) -> Response:
+    _require_login(request)
+    invoices = (
+        (
+            await session.execute(
+                select(Invoice).order_by(Invoice.issue_date.desc().nulls_last()).limit(50)
+            )
+        )
+        .scalars()
+        .all()
+    )
+    receipts = (
+        (
+            await session.execute(
+                select(Receipt).order_by(Receipt.date.desc().nulls_last()).limit(50)
+            )
+        )
+        .scalars()
+        .all()
+    )
+    open_count = sum(1 for i in invoices if i.status in (InvoiceStatus.OPEN, InvoiceStatus.OVERDUE))
+    return templates.TemplateResponse(
+        request,
+        "finance/index.html",
+        {
+            "invoices": list(invoices),
+            "receipts": list(receipts),
+            "open_count": open_count,
+        },
+    )
+
+
+# ---------- Recurring Expenses (Phase 2)
+
+
+@router.get("/web/expenses", response_class=HTMLResponse)
+async def expenses_page(request: Request, session: AsyncSession = SessionDep) -> Response:
+    _require_login(request)
+    rows = (
+        (await session.execute(select(RecurringExpense).order_by(RecurringExpense.name)))
+        .scalars()
+        .all()
+    )
+    burn = await monthly_burn(session, as_of=today_local())
+    return templates.TemplateResponse(
+        request,
+        "expenses/index.html",
+        {
+            "expenses": list(rows),
+            "monthly_burn": burn,
+            "cadences": [c.value for c in ExpenseCadence],
+        },
+    )
+
+
+@router.post("/web/expenses", response_class=HTMLResponse)
+async def expenses_create(
+    request: Request,
+    session: AsyncSession = SessionDep,
+    name: str = Form(...),
+    amount: str = Form(...),
+    cadence: str = Form("monthly"),
+) -> Response:
+    _require_login(request)
+    expense = RecurringExpense(
+        name=name,
+        amount=float(amount.replace(",", ".")),
+        cadence=ExpenseCadence(cadence),
+    )
+    session.add(expense)
+    await session.flush()
+    await record(
+        session,
+        actor=AuditActor.USER,
+        action="expense.create",
+        entity_type="recurring_expense",
+        entity_id=str(expense.id),
+        payload={"name": name},
+    )
+    rows = (
+        (await session.execute(select(RecurringExpense).order_by(RecurringExpense.name)))
+        .scalars()
+        .all()
+    )
+    burn = await monthly_burn(session, as_of=today_local())
+    return templates.TemplateResponse(
+        request,
+        "expenses/_list.html",
+        {"expenses": list(rows), "monthly_burn": burn},
+    )
+
+
+@router.post("/web/expenses/{expense_id}/toggle", response_class=HTMLResponse)
+async def expenses_toggle(
+    expense_id: UUID, request: Request, session: AsyncSession = SessionDep
+) -> Response:
+    _require_login(request)
+    expense = await session.get(RecurringExpense, expense_id)
+    if expense is not None:
+        expense.active = not expense.active
+        await session.flush()
+        await record(
+            session,
+            actor=AuditActor.USER,
+            action="expense.toggle",
+            entity_type="recurring_expense",
+            entity_id=str(expense.id),
+            payload={"active": expense.active},
+        )
+    rows = (
+        (await session.execute(select(RecurringExpense).order_by(RecurringExpense.name)))
+        .scalars()
+        .all()
+    )
+    burn = await monthly_burn(session, as_of=today_local())
+    return templates.TemplateResponse(
+        request,
+        "expenses/_list.html",
+        {"expenses": list(rows), "monthly_burn": burn},
+    )
+
+
+# ---------- Time tracking (Phase 2)
+
+
+@router.get("/web/time", response_class=HTMLResponse)
+async def time_page(request: Request, session: AsyncSession = SessionDep) -> Response:
+    _require_login(request)
+    entries = (
+        (
+            await session.execute(
+                select(TimeEntry)
+                .order_by(TimeEntry.date.desc(), TimeEntry.created_at.desc())
+                .limit(50)
+            )
+        )
+        .scalars()
+        .all()
+    )
+    projects = (await session.execute(select(Project).order_by(Project.name))).scalars().all()
+    summary = await hours_summary(session, as_of=today_local(), window="week")
+    unbilled = await unbilled_value(session, as_of=today_local())
+    return templates.TemplateResponse(
+        request,
+        "time/index.html",
+        {
+            "entries": list(entries),
+            "projects": list(projects),
+            "summary": summary,
+            "unbilled_value": unbilled,
+        },
+    )
+
+
+@router.post("/web/time", response_class=HTMLResponse)
+async def time_create(
+    request: Request,
+    session: AsyncSession = SessionDep,
+    entry_date: str = Form(...),
+    hours: str = Form(...),
+    project_id: str = Form(""),
+    note: str = Form(""),
+) -> Response:
+    _require_login(request)
+    parsed = date.fromisoformat(entry_date)
+    entry = TimeEntry(
+        date=parsed,
+        hours=float(hours.replace(",", ".")),
+        project_id=UUID(project_id) if project_id else None,
+        note=note or None,
+    )
+    session.add(entry)
+    await session.flush()
+    await record(
+        session,
+        actor=AuditActor.USER,
+        action="time_entry.create",
+        entity_type="time_entry",
+        entity_id=str(entry.id),
+        payload={"date": parsed.isoformat(), "hours": hours},
+    )
+    entries = (
+        (
+            await session.execute(
+                select(TimeEntry)
+                .order_by(TimeEntry.date.desc(), TimeEntry.created_at.desc())
+                .limit(50)
+            )
+        )
+        .scalars()
+        .all()
+    )
+    return templates.TemplateResponse(request, "time/_list.html", {"entries": list(entries)})

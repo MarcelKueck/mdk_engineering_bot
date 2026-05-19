@@ -17,7 +17,15 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from mdk_bot.config import get_settings
-from mdk_bot.scheduler.jobs import daily_check_job, reload_obligations_job
+from mdk_bot.scheduler.jobs import (
+    daily_check_job,
+    datev_export_job,
+    dunning_job,
+    lexware_sync_job,
+    liquidity_weekly_job,
+    reload_obligations_job,
+    ustva_preview_job,
+)
 from mdk_bot.shared.logging import configure_logging, get_logger
 
 log = get_logger(__name__)
@@ -43,6 +51,42 @@ def build_scheduler() -> AsyncIOScheduler:
         id="reload_obligations",
         replace_existing=True,
         misfire_grace_time=60 * 60,
+    )
+    scheduler.add_job(
+        lexware_sync_job,
+        trigger=CronTrigger(hour=settings.LEXWARE_SYNC_HOUR, minute=0),
+        id="lexware_sync",
+        replace_existing=True,
+        misfire_grace_time=60 * 60,
+    )
+    scheduler.add_job(
+        ustva_preview_job,
+        # Each quarter-end month, around the 3rd, fire once at 09:00.
+        trigger=CronTrigger(month="1,4,7,10", day="3", hour="9", minute="0"),
+        id="ustva_preview",
+        replace_existing=True,
+        misfire_grace_time=60 * 60 * 24,
+    )
+    scheduler.add_job(
+        dunning_job,
+        trigger=CronTrigger(hour=settings.DAILY_CHECK_HOUR, minute=15),
+        id="dunning_daily",
+        replace_existing=True,
+        misfire_grace_time=60 * 60,
+    )
+    scheduler.add_job(
+        liquidity_weekly_job,
+        trigger=CronTrigger(day_of_week="mon", hour=8, minute=0),
+        id="liquidity_weekly",
+        replace_existing=True,
+        misfire_grace_time=60 * 60 * 6,
+    )
+    scheduler.add_job(
+        datev_export_job,
+        trigger=CronTrigger(month="1", day="15", hour="9", minute="0"),
+        id="datev_export",
+        replace_existing=True,
+        misfire_grace_time=60 * 60 * 24 * 7,
     )
     return scheduler
 

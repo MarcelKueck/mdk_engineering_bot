@@ -30,6 +30,14 @@ from mdk_bot.api.routers import (
     projects,
     tasks,
 )
+from mdk_bot.capabilities.datev.router import router as datev_router
+from mdk_bot.capabilities.dunning.router import router as dunning_router
+from mdk_bot.capabilities.expenses.router import router as expenses_router
+from mdk_bot.capabilities.lexware.router import router as lexware_router
+from mdk_bot.capabilities.liquidity.router import router as liquidity_router
+from mdk_bot.capabilities.timetracking.router import router as time_router
+from mdk_bot.capabilities.ustva.router import router as ustva_router
+from mdk_bot.capabilities.vies.router import router as vies_router
 from mdk_bot.config import get_settings
 from mdk_bot.core.db import get_engine, reset_engine
 from mdk_bot.shared.logging import configure_logging, get_logger
@@ -96,6 +104,14 @@ def create_app() -> FastAPI:
     api.include_router(obligations.pause_router)
     api.include_router(anchors.router)
     api.include_router(audit.router)
+    api.include_router(lexware_router)
+    api.include_router(expenses_router)
+    api.include_router(time_router)
+    api.include_router(ustva_router)
+    api.include_router(liquidity_router)
+    api.include_router(dunning_router)
+    api.include_router(vies_router)
+    api.include_router(datev_router)
     app.mount("/api/v1", api)
 
     if STATIC_DIR.exists():

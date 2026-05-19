@@ -10,20 +10,29 @@ from mdk_bot.bot.handlers._common import operator_handler, reply_md
 WELCOME = """\
 👋 *MDK Engineering Bot*
 
-I remind you about tax and admin obligations and help with tasks & anchors.
+I remind you about tax and admin obligations and help with tasks, anchors,
+finance, time tracking, UStVA, Mahnwesen, liquidity, VIES, and DATEV.
 
-Main commands:
-• /today — due today
-• /week — next 7 days
-• /upcoming N — next N instances
-• /list [category] — catalog
-• /details <id> — show details for an obligation
-• /done <id> | /skip <id> — set status
-• /anchor <field> <YYYY-MM-DD> — set an anchor date
-• /anchors — list anchor dates
-• /pause [hours] | /resume — pause/resume the bot
+*Reminders & tasks*
+• /today · /week · /upcoming N — what's due
+• /list [category] · /details <id> — catalog
+• /done <id> · /skip <id> — set status
+• /anchor <field> <YYYY-MM-DD> · /anchors — anchor dates
+• /pause [hours] · /resume — pause/resume notifications
 • /adhoc — ad-hoc rules
-• /help — show this help
+
+*Finance (Phase 2)*
+• /finance — open/overdue invoices, last Lexware sync
+• /sync_now — pull Lexware now
+• /expenses · /expense_add <name> <amount> [cadence] · /expense_edit · /expense_rm
+• /log <hours> [project] [note] · /hours [week|month] · /unbilled
+• /ustva — current quarter preview · /approve_ustva — operator approval
+• /runway (or /liquidity) — runway view from known facts
+• /send_mahnung <invoice-prefix> — approve a Mahnung draft
+• /vat <VAT-ID> — qualified VIES check
+• /datev_export <year> — generate a DATEV pack
+
+/help — show this help
 """
 
 

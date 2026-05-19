@@ -36,6 +36,7 @@ services:
       ENVIRONMENT: production
     volumes:
       - uploads_data:/app/uploads
+      - data_artifacts:/app/data
     depends_on:
       db:
         condition: service_healthy
@@ -69,6 +70,8 @@ services:
     env_file: .env
     environment:
       ENVIRONMENT: production
+    volumes:
+      - data_artifacts:/app/data
     depends_on:
       db:
         condition: service_healthy
@@ -93,4 +96,5 @@ volumes:
   redis_data:
   uploads_data:
   caddy_data:
+  data_artifacts:
   caddy_config:

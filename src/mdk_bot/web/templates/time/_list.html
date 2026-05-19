@@ -1,0 +1,28 @@
+<div id="time-list" class="bg-white border border-slate-200 rounded-lg overflow-hidden">
+    {% if entries %}
+    <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500">
+            <tr>
+                <th class="text-left px-3 py-2">Date</th>
+                <th class="text-right px-3 py-2">Hours</th>
+                <th class="text-left px-3 py-2">Project</th>
+                <th class="text-left px-3 py-2">Note</th>
+                <th class="text-left px-3 py-2">Billed</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for e in entries %}
+            <tr class="border-t border-slate-100">
+                <td class="px-3 py-2">{{ e.date.isoformat() }}</td>
+                <td class="px-3 py-2 text-right">{{ "%.2f" % e.hours }}</td>
+                <td class="px-3 py-2">{{ e.project_id or "" }}</td>
+                <td class="px-3 py-2 text-slate-600">{{ e.note or "" }}</td>
+                <td class="px-3 py-2">{{ "yes" if e.billed else "no" }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="p-4 text-sm text-slate-500">No entries yet.</p>
+    {% endif %}
+</div>

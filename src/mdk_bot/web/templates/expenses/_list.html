@@ -1,0 +1,40 @@
+<div id="expenses-list" class="bg-white border border-slate-200 rounded-lg overflow-hidden">
+    {% if expenses %}
+    <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500">
+            <tr>
+                <th class="text-left px-3 py-2">Name</th>
+                <th class="text-right px-3 py-2">Amount</th>
+                <th class="text-left px-3 py-2">Cadence</th>
+                <th class="text-left px-3 py-2">Active</th>
+                <th class="text-left px-3 py-2">Next change</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for e in expenses %}
+            <tr class="border-t border-slate-100 {% if not e.active %}text-slate-400{% endif %}">
+                <td class="px-3 py-2">{{ e.name }}</td>
+                <td class="px-3 py-2 text-right">{{ "%.2f" % e.amount }} {{ e.currency }}</td>
+                <td class="px-3 py-2">{{ e.cadence.value }}</td>
+                <td class="px-3 py-2">{{ "yes" if e.active else "no" }}</td>
+                <td class="px-3 py-2 text-slate-500">
+                    {% if e.next_amount and e.next_amount_effective_from %}
+                    → {{ "%.2f" % e.next_amount }} from {{ e.next_amount_effective_from.isoformat() }}
+                    {% endif %}
+                </td>
+                <td class="px-3 py-2 text-right">
+                    <button hx-post="/web/expenses/{{ e.id }}/toggle"
+                            hx-target="#expenses-list" hx-swap="outerHTML"
+                            class="text-xs text-slate-500 hover:text-blue-600">
+                        {{ "Deactivate" if e.active else "Activate" }}
+                    </button>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="p-4 text-sm text-slate-500">No expenses yet.</p>
+    {% endif %}
+</div>

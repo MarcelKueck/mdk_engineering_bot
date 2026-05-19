@@ -194,6 +194,39 @@ See `.env.example` — every field is documented inline.
 
 See [DEPLOYMENT.md](./DEPLOYMENT.md).
 
+## What ships in Phase 2 (finance automation)
+
+Eight new capability modules — see [PHASE2.md](./PHASE2.md) for a full
+reference. All external integrations sit behind a feature flag AND a
+credential; with zero credentials the bot/scheduler/API still start
+cleanly and the modules log a "skipped" line.
+
+| Module | Flag | Bot commands |
+|---|---|---|
+| **Lexware sync** (`capabilities/lexware/`) | `FEATURE_LEXWARE_SYNC` | `/finance`, `/sync_now` |
+| **Recurring expenses** | always on | `/expenses`, `/expense_add`, `/expense_edit`, `/expense_rm` |
+| **Time tracking** | always on | `/log`, `/hours`, `/unbilled` |
+| **UStVA Vorbereitung** | `FEATURE_USTVA` | `/ustva`, `/approve_ustva` |
+| **Liquidity & runway** | `FEATURE_LIQUIDITY` | `/runway` (alias `/liquidity`) |
+| **Mahnwesen** | `FEATURE_DUNNING` | `/send_mahnung <id>` |
+| **VIES VAT check** | `FEATURE_VIES` | `/vat <VAT-ID>` |
+| **DATEV year-end export** | `FEATURE_DATEV` | `/datev_export <year>` |
+
+New web pages: `/web/finance` (invoices + receipts), `/web/expenses`
+(CRUD), `/web/time` (log + summary).
+
+Schema changes ship in migration `0002`: the existing `Invoice` /
+`Receipt` / `Transaction` stubs are extended to their full shape, and
+six new tables (`recurring_expenses`, `time_entries`, `vat_validations`,
+`ustva_periods`, `dunning_runs`, `liquidity_snapshots`) are added. The
+migration seeds five recurring expenses (Claude, Lebara, Lexware
+Office, Google Workspace, Hetzner).
+
+Phase 2 deliberately stops short of *taking action on the operator's
+behalf*: nothing submits to ELSTER, nothing emails the customer, nothing
+uploads to Drive. Each pipeline ends at "draft ready, operator approves
+in Telegram".
+
 ## What ships in Phase 0 + 1 (this milestone)
 
 - ✅ Postgres + pgvector schema with stub tables for future phases
