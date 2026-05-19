@@ -10,20 +10,20 @@ from mdk_bot.bot.handlers._common import operator_handler, reply_md
 WELCOME = """\
 👋 *MDK Engineering Bot*
 
-Ich erinnere dich an Steuer- und Admin-Pflichten und helfe bei Tasks & Anchors.
+I remind you about tax and admin obligations and help with tasks & anchors.
 
-Wichtige Befehle:
-• /today — heute fällig
-• /week — nächste 7 Tage
-• /upcoming N — nächste N Instanzen
-• /list [kategorie] — Katalog
-• /details <id> — Details zu einer Pflicht
-• /done <id> | /skip <id> — Status setzen
-• /anchor <feld> <YYYY-MM-DD> — Anker setzen
-• /anchors — gesetzte Anker
-• /pause [stunden] | /resume — Bot pausieren / fortsetzen
-• /adhoc — Ad-hoc-Regeln
-• /help — Übersicht
+Main commands:
+• /today — due today
+• /week — next 7 days
+• /upcoming N — next N instances
+• /list [category] — catalog
+• /details <id> — show details for an obligation
+• /done <id> | /skip <id> — set status
+• /anchor <field> <YYYY-MM-DD> — set an anchor date
+• /anchors — list anchor dates
+• /pause [hours] | /resume — pause/resume the bot
+• /adhoc — ad-hoc rules
+• /help — show this help
 """
 
 

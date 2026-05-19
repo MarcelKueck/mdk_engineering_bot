@@ -17,7 +17,7 @@ def test_format_notification_mandatory_has_warning() -> None:
     instance = ObligationInstance(obligation_id=obligation.id, due_date=date(2025, 4, 10))
     text = format_notification(obligation, instance)
     assert "🔔" in text
-    assert "PFLICHT" in text
+    assert "MANDATORY" in text
     assert "10%" in text
     assert "/done ustva_quartal" in text
 
@@ -26,8 +26,8 @@ def test_format_notification_optional_uses_recommendation() -> None:
     obligation = make_obligation(id="schaetzung_review", mandatory=False)
     instance = ObligationInstance(obligation_id=obligation.id, due_date=date(2025, 4, 15))
     text = format_notification(obligation, instance)
-    assert "Empfohlen" in text
-    assert "PFLICHT" not in text
+    assert "Recommended" in text
+    assert "MANDATORY" not in text
 
 
 def test_format_notification_zm_quartal_appendix() -> None:

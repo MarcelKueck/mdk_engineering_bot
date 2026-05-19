@@ -29,7 +29,7 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             return
         candidates = [i for i in resp.json() if i["obligation_id"] == obligation_id]
         if not candidates:
-            await reply_md(update, f"Keine offene Instanz für `{obligation_id}` gefunden.")
+            await reply_md(update, f"No open instance found for `{obligation_id}`.")
             return
         # Earliest-due, still-open instance first.
         candidates.sort(key=lambda i: i["due_date"])
@@ -41,5 +41,5 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     await reply_md(
         update,
-        f"✅ Erledigt: `{obligation_id}` (Fällig: `{instance['due_date']}`).",
+        f"✅ Done: `{obligation_id}` (due `{instance['due_date']}`).",
     )

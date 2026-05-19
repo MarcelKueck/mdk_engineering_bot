@@ -87,7 +87,7 @@ async def test_daily_check_escalates_overdue_mandatory(session: AsyncSession) ->
     await run_daily_check(session, notifier, today=date(2025, 4, 11))
     instance = (await session.execute(select(ObligationInstance))).scalar_one()
     assert instance.status == ObligationInstanceStatus.ESCALATED
-    assert "PFLICHT" in notifier.messages[0]
+    assert "MANDATORY" in notifier.messages[0]
 
 
 async def test_anchor_driven_requires_anchor(session: AsyncSession) -> None:

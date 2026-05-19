@@ -28,10 +28,10 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     obligations = resp.json()
     if not obligations:
-        await reply_md(update, "Keine Pflichten gefunden.")
+        await reply_md(update, "No obligations found.")
         return
 
-    header = f"📚 *Katalog* ({category})" if category else "📚 *Katalog*"
+    header = f"📚 *Catalog* ({category})" if category else "📚 *Catalog*"
     lines = [header, ""]
     last_cat: str | None = None
     for o in obligations:

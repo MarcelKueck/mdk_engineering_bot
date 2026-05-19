@@ -29,7 +29,7 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             return
         candidates = [i for i in resp.json() if i["obligation_id"] == obligation_id]
         if not candidates:
-            await reply_md(update, f"Keine offene Instanz für `{obligation_id}` gefunden.")
+            await reply_md(update, f"No open instance found for `{obligation_id}`.")
             return
         candidates.sort(key=lambda i: i["due_date"])
         instance = candidates[0]
@@ -38,4 +38,4 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             await reply_md(update, fmt_http_error(skip_resp))
             return
 
-    await reply_md(update, f"⏭️ Übersprungen: `{obligation_id}` (Fällig: `{instance['due_date']}`).")
+    await reply_md(update, f"⏭️ Skipped: `{obligation_id}` (due `{instance['due_date']}`).")

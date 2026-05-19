@@ -35,9 +35,9 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         if t.get("due_date") == today.isoformat() and t["status"] in ("todo", "doing")
     ]
 
-    lines = [f"📅 *Heute — {today.isoformat()}*", ""]
+    lines = [f"📅 *Today — {today.isoformat()}*", ""]
     if instances:
-        lines.append("*Pflichten*")
+        lines.append("*Obligations*")
         for inst in instances:
             lines.append(f"• `{inst['obligation_id']}` — {inst['status']}")
     if tasks:
@@ -47,6 +47,6 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         for task in tasks:
             lines.append(f"• {task['title']} (P{task['priority']})")
     if not instances and not tasks:
-        lines.append("Nichts heute. ✨")
+        lines.append("Nothing today. ✨")
 
     await reply_md(update, "\n".join(lines))

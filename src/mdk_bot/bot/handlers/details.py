@@ -27,7 +27,7 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     async with api_client_ctx() as api:
         resp = await api.get(f"/obligations/{obligation_id}")
         if resp.status_code == 404:
-            await reply_md(update, f"Unbekannte ID: `{obligation_id}`")
+            await reply_md(update, f"Unknown ID: `{obligation_id}`")
             return
         if resp.status_code != 200:
             await reply_md(update, fmt_http_error(resp))
@@ -37,9 +37,9 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     pretty = json.dumps(o["raw"], indent=2, ensure_ascii=False)
     text = (
         f"*{o['title']}*\n"
-        f"Kategorie: `{o['category']}` · Pflicht: {'ja' if o['mandatory'] else 'nein'}\n"
+        f"Category: `{o['category']}` · Mandatory: {'yes' if o['mandatory'] else 'no'}\n"
         f"Recurrence: `{o['recurrence']}`\n"
-        f"Lead time: {o['lead_time_days']}d · Aufwand: ~{o['estimated_minutes']} Min\n"
+        f"Lead time: {o['lead_time_days']}d · Effort: ~{o['estimated_minutes']} min\n"
         f"Tool: {o['tool']}\n\n"
         f"```\n{pretty}\n```"
     )
