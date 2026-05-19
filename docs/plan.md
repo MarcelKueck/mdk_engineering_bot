@@ -73,27 +73,27 @@ All inter-service communication goes through the Core API; the bot and web UI ar
 
 ## 3. Tech Stack
 
-| Layer | Choice | Rationale |
-|---|---|---|
-| Language | Python 3.12 | Mature async, best LLM SDK ecosystem |
-| Package manager | `uv` | 10× faster than pip/poetry, single source of truth |
-| Web framework | FastAPI | Async, Pydantic-native, OpenAPI auto-gen |
-| ORM | SQLAlchemy 2.x + Alembic | Industry standard, async support |
-| DB | Postgres 16 + pgvector | Single store for relational + vector |
-| Cache/queue | Redis 7 | De-facto standard, low ops |
-| Task queue | RQ or Celery | RQ for simplicity, upgrade to Celery if needed |
-| Bot framework | python-telegram-bot v21+ | Most mature, async, polling-friendly |
-| Scheduling | APScheduler + SQLAlchemyJobStore | Persistent jobs across restarts |
-| Browser automation | Playwright | Modern, supports all required login flows |
-| LLM | Anthropic API (Claude Sonnet 4.6 default, Haiku for classification, Opus for hard reasoning) | Best price/performance, structured outputs |
-| Transcription | OpenAI Whisper API (later: self-hosted whisper.cpp) | Cheap, accurate, multilingual |
-| Web UI | HTMX + Tailwind + Jinja2 | No build pipeline, server-rendered, fast iteration |
-| Auth (web) | Token-based session, Telegram-OTP later | Single user MVP, multi-user ready |
-| Deployment | Docker Compose + Caddy on Hetzner VPS | Cheap, full control, no vendor lock-in |
-| Logging | structlog → stdout → Loki (later) | JSON logs, future-proof |
-| Tests | pytest, pytest-asyncio, httpx, factory_boy | Standard, well-supported |
-| Lint/format | ruff | Replaces black + flake8 + isort |
-| Type-check | mypy (strict mode on src/) | Catches half the bugs before runtime |
+| Layer              | Choice                                                                                       | Rationale                                          |
+| ------------------ | -------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| Language           | Python 3.12                                                                                  | Mature async, best LLM SDK ecosystem               |
+| Package manager    | `uv`                                                                                         | 10× faster than pip/poetry, single source of truth |
+| Web framework      | FastAPI                                                                                      | Async, Pydantic-native, OpenAPI auto-gen           |
+| ORM                | SQLAlchemy 2.x + Alembic                                                                     | Industry standard, async support                   |
+| DB                 | Postgres 16 + pgvector                                                                       | Single store for relational + vector               |
+| Cache/queue        | Redis 7                                                                                      | De-facto standard, low ops                         |
+| Task queue         | RQ or Celery                                                                                 | RQ for simplicity, upgrade to Celery if needed     |
+| Bot framework      | python-telegram-bot v21+                                                                     | Most mature, async, polling-friendly               |
+| Scheduling         | APScheduler + SQLAlchemyJobStore                                                             | Persistent jobs across restarts                    |
+| Browser automation | Playwright                                                                                   | Modern, supports all required login flows          |
+| LLM                | Anthropic API (Claude Sonnet 4.6 default, Haiku for classification, Opus for hard reasoning) | Best price/performance, structured outputs         |
+| Transcription      | OpenAI Whisper API (later: self-hosted whisper.cpp)                                          | Cheap, accurate, multilingual                      |
+| Web UI             | HTMX + Tailwind + Jinja2                                                                     | No build pipeline, server-rendered, fast iteration |
+| Auth (web)         | Token-based session, Telegram-OTP later                                                      | Single user MVP, multi-user ready                  |
+| Deployment         | Docker Compose + Caddy on Hetzner VPS                                                        | Cheap, full control, no vendor lock-in             |
+| Logging            | structlog → stdout → Loki (later)                                                            | JSON logs, future-proof                            |
+| Tests              | pytest, pytest-asyncio, httpx, factory_boy                                                   | Standard, well-supported                           |
+| Lint/format        | ruff                                                                                         | Replaces black + flake8 + isort                    |
+| Type-check         | mypy (strict mode on src/)                                                                   | Catches half the bugs before runtime               |
 
 ---
 
@@ -124,6 +124,8 @@ The core entities form a graph. Lexware data is mirrored, not duplicated — Lex
 - **Transaction** — bank movements. Fields: account, date, amount, currency, description, counterparty, lexware_match_id, project_id, status
 - **Invoice** — synced from Lexware. Fields: lexware_id, number, customer_org_id, project_id, issue_date, due_date, total_gross, total_net, status, paid_date, mahnstufe
 - **Receipt** — synced from Lexware. Fields: lexware_id, vendor_org_id, project_id, date, total, vat, category, document_id, status
+- **RecurringExpense** — operator-managed recurring costs. Fields: name, amount, currency, cadence, vendor_org_id, category, vat_rate, active, effective_from, effective_until, next_amount, next_amount_effective_from. Editable in web UI and via the bot.
+- **TimeEntry** — operator-logged work time (replaces external time tracking). Fields: date, hours, project_id, note, billable, billed, invoice_id.
 
 ### Knowledge & Personal
 
@@ -168,8 +170,8 @@ Before each quarter end (~7 days lead):
 - If match ambiguous: Telegram prompt with the suggested match
 - Failures (login change, MFA, etc.) reported to operator immediately
 
-### 5.5 Cashflow Forecast (Phase 2)
-Pulls from Invoice (open + expected payment date), recurring expenses (from Receipts), Steuerrücklage rules, and Toggl WIP. Projects N26 balance 90 days forward. Telegram weekly digest. Threshold alert: "If revenue stays flat, balance < 5.000 € in 47 days."
+### 5.5 Liquidity & Runway (Phase 2)
+Not a smooth balance forecast — the operator's income is irregular, so a predicted income curve would be false precision. Instead a runway view built from known, dated facts: an operator-set opening balance, scheduled outflows (recurring expenses, Steuerrücklage, known tax dates), and expected inflows from already-issued invoices at their due dates. Unbilled time-entry value is shown separately as "potential, not yet committed". Headline: the date until which known outflows are covered. Weekly Telegram digest; alert when runway drops within a warning window.
 
 ### 5.6 Mahnwesen-Automat (Phase 2)
 Daily check of open Invoices. At +14 days: drafts "Zahlungserinnerung" in operator's voice. At +30: "1. Mahnung". At +45: "2. Mahnung mit Verzugszinsen + Mahngebühren". Each draft delivered to Telegram; on `/send_mahnung` the email goes out. Tracks mahnstufe; logs to Conversation.
@@ -267,18 +269,18 @@ Telegram message at 07:30:
 
 Each phase is one Claude Code session (a focused, reviewable PR). Phases build on each other.
 
-| Phase | Scope | Duration |
-|---|---|---|
-| **0** | Foundation: repo scaffold, Postgres, FastAPI, web UI shell, auth, docker-compose, Hetzner deploy | 1 session |
-| **1** | Reminder Engine (current obligations.json) | same session as 0 |
-| 2 | Lexware Sync + UStVA Vorbereitung + Cashflow + Mahnwesen + VIES + DATEV Export | 1 session |
-| 3 | Gmail Triage (no WA yet) | 1 session |
-| 4 | Receipt Auto-Fetcher (Playwright + Credential Vault) | 1 session |
-| 5 | Voice-First Interface + Post-Meeting + Knowledge Base + Daily Briefing | 1 session |
-| 6 | Project Lifecycle + Auto-Quote Generator | 1 session |
-| 7 | Medical Bill / Beihilfe Workflow + Document Auto-Filing | 1 session |
-| 8 | WhatsApp Business Bridge + Build-Log Helper + Reading List | 1 session |
-| 9+ | Polish, productization, multi-tenancy | TBD |
+| Phase | Scope                                                                                            | Duration          |
+| ----- | ------------------------------------------------------------------------------------------------ | ----------------- |
+| **0** | Foundation: repo scaffold, Postgres, FastAPI, web UI shell, auth, docker-compose, Hetzner deploy | 1 session         |
+| **1** | Reminder Engine (current obligations.json)                                                       | same session as 0 |
+| 2     | Lexware Sync + UStVA Vorbereitung + Cashflow + Mahnwesen + VIES + DATEV Export                   | 1 session         |
+| 3     | Gmail Triage (no WA yet)                                                                         | 1 session         |
+| 4     | Receipt Auto-Fetcher (Playwright + Credential Vault)                                             | 1 session         |
+| 5     | Voice-First Interface + Post-Meeting + Knowledge Base + Daily Briefing                           | 1 session         |
+| 6     | Project Lifecycle + Auto-Quote Generator                                                         | 1 session         |
+| 7     | Medical Bill / Beihilfe Workflow + Document Auto-Filing                                          | 1 session         |
+| 8     | WhatsApp Business Bridge + Build-Log Helper + Reading List                                       | 1 session         |
+| 9+    | Polish, productization, multi-tenancy                                                            | TBD               |
 
 Phase 0+1 is what gets built in the first Claude Code session (see the separate prompt file).
 
@@ -460,16 +462,16 @@ Future capability modules slot into `src/mdk_bot/capabilities/<name>/`.
 
 Realistic estimates for solo developer review-and-iterate workflow with Claude Code doing the bulk of the writing:
 
-| Phase | Wall-clock | Active operator time | Infra cost delta |
-|---|---|---|---|
-| 0+1 | ~3 days | ~6 hours | €0 |
-| 2 | ~4 days | ~8 hours | €0 |
-| 3 | ~3 days | ~6 hours | +€5/mo (Anthropic usage) |
-| 4 | ~5 days | ~10 hours | +€5/mo (CX42 upgrade) |
-| 5 | ~4 days | ~8 hours | +€3/mo (Whisper) |
-| 6 | ~3 days | ~6 hours | €0 |
-| 7 | ~4 days | ~8 hours | €0 |
-| 8 | ~4 days | ~8 hours | +€2/mo (WA Cloud) |
-| **Total to "everything working"** | **~30 days** | **~60 hours** | **~€45/mo** |
+| Phase                             | Wall-clock   | Active operator time | Infra cost delta         |
+| --------------------------------- | ------------ | -------------------- | ------------------------ |
+| 0+1                               | ~3 days      | ~6 hours             | €0                       |
+| 2                                 | ~4 days      | ~8 hours             | €0                       |
+| 3                                 | ~3 days      | ~6 hours             | +€5/mo (Anthropic usage) |
+| 4                                 | ~5 days      | ~10 hours            | +€5/mo (CX42 upgrade)    |
+| 5                                 | ~4 days      | ~8 hours             | +€3/mo (Whisper)         |
+| 6                                 | ~3 days      | ~6 hours             | €0                       |
+| 7                                 | ~4 days      | ~8 hours             | €0                       |
+| 8                                 | ~4 days      | ~8 hours             | +€2/mo (WA Cloud)        |
+| **Total to "everything working"** | **~30 days** | **~60 hours**        | **~€45/mo**              |
 
 Spread across 3–4 months part-time is realistic. The system delivers value incrementally — after Phase 0+1 you already have reminders running.
