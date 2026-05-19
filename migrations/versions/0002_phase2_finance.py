@@ -8,6 +8,7 @@ Create Date: 2026-05-19 00:00:00
 
 from __future__ import annotations
 
+import os
 from collections.abc import Sequence
 from datetime import date, datetime
 from decimal import Decimal
@@ -53,22 +54,25 @@ SEED_EXPENSES: list[dict[str, object]] = [
     },
 ]
 
-DEFAULT_TENANT_ID = UUID("00000000-0000-0000-0000-000000000001")
+
+def _seed_tenant_id() -> UUID:
+    """Read DEFAULT_TENANT_ID from the env so seeds land on the operator's tenant."""
+    raw = os.environ.get("DEFAULT_TENANT_ID")
+    if raw:
+        try:
+            return UUID(raw)
+        except ValueError:
+            pass
+    return UUID("00000000-0000-0000-0000-000000000001")
 
 
 def upgrade() -> None:
-    invoice_status = sa.Enum(
-        "draft", "open", "paid", "overdue", "cancelled", name="invoice_status"
-    )
+    invoice_status = sa.Enum("draft", "open", "paid", "overdue", "cancelled", name="invoice_status")
     receipt_status = sa.Enum("pending", "matched", "missing", name="receipt_status")
-    transaction_status = sa.Enum(
-        "unmatched", "matched", "ignored", name="transaction_status"
-    )
+    transaction_status = sa.Enum("unmatched", "matched", "ignored", name="transaction_status")
     transaction_direction = sa.Enum("in", "out", name="transaction_direction")
     expense_cadence = sa.Enum("monthly", "quarterly", "yearly", name="expense_cadence")
-    ustva_status = sa.Enum(
-        "preparing", "review", "approved", "submitted", name="ustva_status"
-    )
+    ustva_status = sa.Enum("preparing", "review", "approved", "submitted", name="ustva_status")
     invoice_status.create(op.get_bind(), checkfirst=True)
     receipt_status.create(op.get_bind(), checkfirst=True)
     transaction_status.create(op.get_bind(), checkfirst=True)
@@ -188,9 +192,7 @@ def upgrade() -> None:
     # ----- extend transactions -------------------------------------------
     op.add_column("transactions", sa.Column("account", sa.String(64)))
     op.add_column("transactions", sa.Column("lexware_match_id", sa.String(64)))
-    op.add_column(
-        "transactions", sa.Column("project_id", postgresql.UUID(as_uuid=True))
-    )
+    op.add_column("transactions", sa.Column("project_id", postgresql.UUID(as_uuid=True)))
     op.create_foreign_key(
         "fk_transactions_project_id",
         "transactions",
@@ -357,9 +359,7 @@ def upgrade() -> None:
             nullable=False,
             server_default=sa.func.now(),
         ),
-        sa.UniqueConstraint(
-            "tenant_id", "year", "quarter", name="uq_ustva_tenant_year_quarter"
-        ),
+        sa.UniqueConstraint("tenant_id", "year", "quarter", name="uq_ustva_tenant_year_quarter"),
         sa.CheckConstraint("quarter BETWEEN 1 AND 4", name="ck_ustva_quarter_range"),
     )
 
@@ -377,12 +377,8 @@ def upgrade() -> None:
         ),
         sa.Column("mahnstufe", sa.Integer, nullable=False),
         sa.Column("draft_text", sa.Text, nullable=False),
-        sa.Column(
-            "interest_amount", sa.Numeric(12, 2), nullable=False, server_default="0"
-        ),
-        sa.Column(
-            "fee_amount", sa.Numeric(12, 2), nullable=False, server_default="0"
-        ),
+        sa.Column("interest_amount", sa.Numeric(12, 2), nullable=False, server_default="0"),
+        sa.Column("fee_amount", sa.Numeric(12, 2), nullable=False, server_default="0"),
         sa.Column("sent_at", sa.DateTime(timezone=True)),
         sa.Column(
             "conversation_id",
@@ -395,9 +391,7 @@ def upgrade() -> None:
             nullable=False,
             server_default=sa.func.now(),
         ),
-        sa.UniqueConstraint(
-            "invoice_id", "mahnstufe", name="uq_dunning_invoice_stufe"
-        ),
+        sa.UniqueConstraint("invoice_id", "mahnstufe", name="uq_dunning_invoice_stufe"),
     )
 
     # ----- liquidity_snapshots -------------------------------------------
@@ -435,38 +429,40 @@ def upgrade() -> None:
     )
 
     # ----- seed recurring expenses ---------------------------------------
-    recurring_expenses = sa.table(
-        "recurring_expenses",
-        sa.column("id", postgresql.UUID(as_uuid=True)),
-        sa.column("tenant_id", postgresql.UUID(as_uuid=True)),
-        sa.column("name", sa.String()),
-        sa.column("amount", sa.Numeric()),
-        sa.column("currency", sa.String()),
-        sa.column("cadence", sa.String()),
-        sa.column("active", sa.Boolean()),
-        sa.column("next_amount", sa.Numeric()),
-        sa.column("next_amount_effective_from", sa.Date()),
-        sa.column("created_at", sa.DateTime(timezone=True)),
-        sa.column("updated_at", sa.DateTime(timezone=True)),
-    )
+    # Use plain INSERT statements (not bulk_insert) so we can cast the
+    # cadence string to the named Postgres enum without psycopg complaining
+    # that "VARCHAR is not expense_cadence".
+    tenant_id = _seed_tenant_id()
     now = datetime.utcnow()
-    rows = [
-        {
-            "id": uuid4(),
-            "tenant_id": DEFAULT_TENANT_ID,
-            "name": e["name"],
-            "amount": e["amount"],
-            "currency": "EUR",
-            "cadence": e["cadence"],
-            "active": True,
-            "next_amount": e.get("next_amount"),
-            "next_amount_effective_from": e.get("next_amount_effective_from"),
-            "created_at": now,
-            "updated_at": now,
-        }
-        for e in SEED_EXPENSES
-    ]
-    op.bulk_insert(recurring_expenses, rows)
+    bind = op.get_bind()
+    for spec in SEED_EXPENSES:
+        bind.execute(
+            sa.text(
+                """
+                INSERT INTO recurring_expenses (
+                    id, tenant_id, name, amount, currency, cadence, active,
+                    next_amount, next_amount_effective_from, created_at, updated_at
+                ) VALUES (
+                    :id, :tenant_id, :name, :amount, :currency,
+                    CAST(:cadence AS expense_cadence), :active,
+                    :next_amount, :next_amount_effective_from, :created_at, :updated_at
+                )
+                """
+            ),
+            {
+                "id": uuid4(),
+                "tenant_id": tenant_id,
+                "name": spec["name"],
+                "amount": spec["amount"],
+                "currency": "EUR",
+                "cadence": spec["cadence"],
+                "active": True,
+                "next_amount": spec.get("next_amount"),
+                "next_amount_effective_from": spec.get("next_amount_effective_from"),
+                "created_at": now,
+                "updated_at": now,
+            },
+        )
 
 
 def downgrade() -> None:

@@ -167,9 +167,7 @@ def upgrade() -> None:
         sa.Column("lead_time_days", sa.Integer, nullable=False, server_default="0"),
         sa.Column("action", sa.Text, nullable=False),
         sa.Column("tool", sa.String(255), nullable=False),
-        sa.Column(
-            "mandatory", sa.Boolean, nullable=False, server_default=sa.text("false")
-        ),
+        sa.Column("mandatory", sa.Boolean, nullable=False, server_default=sa.text("false")),
         sa.Column("mandatory_label", sa.String(255)),
         sa.Column("estimated_minutes", sa.Integer, nullable=False, server_default="0"),
         sa.Column("penalty", sa.Text),
@@ -206,11 +204,11 @@ def upgrade() -> None:
             nullable=False,
             server_default=sa.func.now(),
         ),
-        sa.UniqueConstraint(
-            "obligation_id", "due_date", name="uq_obligation_instance_id_date"
-        ),
+        sa.UniqueConstraint("obligation_id", "due_date", name="uq_obligation_instance_id_date"),
     )
-    op.create_index("ix_obligation_instances_obligation_id", "obligation_instances", ["obligation_id"])
+    op.create_index(
+        "ix_obligation_instances_obligation_id", "obligation_instances", ["obligation_id"]
+    )
     op.create_index("ix_obligation_instances_due_date", "obligation_instances", ["due_date"])
 
     # ----- tasks
@@ -522,9 +520,7 @@ def upgrade() -> None:
         sa.Column(
             "metadata_json", postgresql.JSONB, nullable=False, server_default=sa.text("'{}'::jsonb")
         ),
-        sa.UniqueConstraint(
-            "tenant_id", "provider", name="uq_provider_credential_tenant_provider"
-        ),
+        sa.UniqueConstraint("tenant_id", "provider", name="uq_provider_credential_tenant_provider"),
     )
 
 
@@ -554,17 +550,13 @@ def downgrade() -> None:
     op.drop_table("adhoc_rules")
     op.drop_table("pause_state")
     op.drop_table("anchor_dates")
-    op.drop_index(
-        "ix_notification_log_obligation_instance_id", table_name="notification_log"
-    )
+    op.drop_index("ix_notification_log_obligation_instance_id", table_name="notification_log")
     op.drop_table("notification_log")
     op.drop_table("tasks")
     op.execute("DROP TYPE IF EXISTS task_source")
     op.execute("DROP TYPE IF EXISTS task_status")
     op.drop_index("ix_obligation_instances_due_date", table_name="obligation_instances")
-    op.drop_index(
-        "ix_obligation_instances_obligation_id", table_name="obligation_instances"
-    )
+    op.drop_index("ix_obligation_instances_obligation_id", table_name="obligation_instances")
     op.drop_table("obligation_instances")
     op.execute("DROP TYPE IF EXISTS obligation_instance_status")
     op.drop_index("ix_obligations_category", table_name="obligations")
