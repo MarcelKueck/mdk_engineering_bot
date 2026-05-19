@@ -9,6 +9,7 @@ from mdk_bot.bot.handlers._common import (
     api_client_ctx,
     fmt_http_error,
     operator_handler,
+    reply,
     reply_md,
 )
 
@@ -25,7 +26,7 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     async with api_client_ctx() as api:
         resp = await api.get("/obligation-instances/upcoming", params={"days": 365})
         if resp.status_code != 200:
-            await reply_md(update, fmt_http_error(resp))
+            await reply(update, fmt_http_error(resp))
             return
         candidates = [i for i in resp.json() if i["obligation_id"] == obligation_id]
         if not candidates:
@@ -36,7 +37,7 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         instance = candidates[0]
         done_resp = await api.post(f"/obligation-instances/{instance['id']}/done")
         if done_resp.status_code != 200:
-            await reply_md(update, fmt_http_error(done_resp))
+            await reply(update, fmt_http_error(done_resp))
             return
 
     await reply_md(

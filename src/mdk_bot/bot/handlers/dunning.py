@@ -9,6 +9,7 @@ from mdk_bot.bot.handlers._common import (
     api_client_ctx,
     fmt_http_error,
     operator_handler,
+    reply,
     reply_md,
 )
 
@@ -24,7 +25,7 @@ async def send_mahnung(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     async with api_client_ctx() as api:
         runs_resp = await api.get("/dunning/runs")
     if runs_resp.status_code != 200:
-        await reply_md(update, fmt_http_error(runs_resp))
+        await reply(update, fmt_http_error(runs_resp))
         return
     candidate = None
     for run in runs_resp.json():
@@ -40,7 +41,7 @@ async def send_mahnung(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     async with api_client_ctx() as api:
         resp = await api.post(f"/dunning/{candidate['id']}/send")
     if resp.status_code != 200:
-        await reply_md(update, fmt_http_error(resp))
+        await reply(update, fmt_http_error(resp))
         return
     body = resp.json()
     await reply_md(

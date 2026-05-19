@@ -9,6 +9,7 @@ from mdk_bot.bot.handlers._common import (
     api_client_ctx,
     fmt_http_error,
     operator_handler,
+    reply,
     reply_md,
 )
 
@@ -23,7 +24,7 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     async with api_client_ctx() as api:
         resp = await api.get("/obligations", params=params)
         if resp.status_code != 200:
-            await reply_md(update, fmt_http_error(resp))
+            await reply(update, fmt_http_error(resp))
             return
 
     obligations = resp.json()

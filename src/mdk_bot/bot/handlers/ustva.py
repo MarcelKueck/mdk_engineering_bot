@@ -9,6 +9,7 @@ from mdk_bot.bot.handlers._common import (
     api_client_ctx,
     fmt_http_error,
     operator_handler,
+    reply,
     reply_md,
 )
 
@@ -19,7 +20,7 @@ async def show(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     async with api_client_ctx() as api:
         resp = await api.post("/ustva/prepare")
     if resp.status_code != 200:
-        await reply_md(update, fmt_http_error(resp))
+        await reply(update, fmt_http_error(resp))
         return
     period = resp.json()
     payload = period.get("payload") or {}
@@ -50,7 +51,7 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     async with api_client_ctx() as api:
         list_resp = await api.get("/ustva")
     if list_resp.status_code != 200:
-        await reply_md(update, fmt_http_error(list_resp))
+        await reply(update, fmt_http_error(list_resp))
         return
     periods = list_resp.json()
     if not periods:
@@ -66,7 +67,7 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     async with api_client_ctx() as api:
         approve_resp = await api.post(f"/ustva/{period['id']}/approve")
     if approve_resp.status_code != 200:
-        await reply_md(update, fmt_http_error(approve_resp))
+        await reply(update, fmt_http_error(approve_resp))
         return
     await reply_md(
         update,

@@ -11,6 +11,7 @@ from mdk_bot.bot.handlers._common import (
     api_client_ctx,
     fmt_http_error,
     operator_handler,
+    reply,
     reply_md,
 )
 from mdk_bot.core.time import now_utc
@@ -30,7 +31,7 @@ async def pause_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     async with api_client_ctx() as api:
         resp = await api.put("/pause", json={"paused_until": until.isoformat()})
         if resp.status_code != 200:
-            await reply_md(update, fmt_http_error(resp))
+            await reply(update, fmt_http_error(resp))
             return
 
     await reply_md(update, f"🤫 Bot paused until `{until.isoformat()}`")
@@ -42,6 +43,6 @@ async def resume_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     async with api_client_ctx() as api:
         resp = await api.put("/pause", json={"paused_until": None})
         if resp.status_code != 200:
-            await reply_md(update, fmt_http_error(resp))
+            await reply(update, fmt_http_error(resp))
             return
     await reply_md(update, "▶️ Bot resumed.")
