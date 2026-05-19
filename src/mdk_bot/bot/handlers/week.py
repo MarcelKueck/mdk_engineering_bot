@@ -40,9 +40,9 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         and t["status"] in ("todo", "doing")
     ]
 
-    lines = [f"📆 *Nächste 7 Tage ({today} → {horizon})*", ""]
+    lines = [f"📆 *Next 7 days ({today} → {horizon})*", ""]
     if instances:
-        lines.append("*Pflichten*")
+        lines.append("*Obligations*")
         for inst in instances:
             lines.append(f"• `{inst['due_date']}` — {inst['obligation_id']}")
     if tasks:
@@ -52,6 +52,6 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         for task in tasks:
             lines.append(f"• `{task['due_date']}` — {task['title']} (P{task['priority']})")
     if not instances and not tasks:
-        lines.append("Nichts in den nächsten 7 Tagen. ✨")
+        lines.append("Nothing in the next 7 days. ✨")
 
     await reply_md(update, "\n".join(lines))

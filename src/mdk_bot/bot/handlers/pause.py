@@ -33,7 +33,7 @@ async def pause_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
             await reply_md(update, fmt_http_error(resp))
             return
 
-    await reply_md(update, f"🤫 Bot pausiert bis `{until.isoformat()}`")
+    await reply_md(update, f"🤫 Bot paused until `{until.isoformat()}`")
 
 
 @operator_handler
@@ -44,4 +44,4 @@ async def resume_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         if resp.status_code != 200:
             await reply_md(update, fmt_http_error(resp))
             return
-    await reply_md(update, "▶️ Bot fortgesetzt.")
+    await reply_md(update, "▶️ Bot resumed.")

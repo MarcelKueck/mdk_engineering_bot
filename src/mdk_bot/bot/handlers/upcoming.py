@@ -31,10 +31,10 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     instances = resp.json()[:count]
     if not instances:
-        await reply_md(update, "Keine anstehenden Instanzen. ✨")
+        await reply_md(update, "No upcoming instances. ✨")
         return
 
-    lines = [f"📋 *Nächste {len(instances)} Instanzen*", ""]
+    lines = [f"📋 *Next {len(instances)} instances*", ""]
     for inst in instances:
         lines.append(f"`{inst['due_date']}` — `{inst['obligation_id']}` ({inst['status']})")
     await reply_md(update, "\n".join(lines))

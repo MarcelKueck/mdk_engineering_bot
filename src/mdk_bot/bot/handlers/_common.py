@@ -33,7 +33,7 @@ def with_error_reply(handler: Callable[..., Awaitable[Any]]) -> Callable[..., Aw
                 exc_info=True,
             )
             if update.message is not None:
-                await update.message.reply_text("Etwas ist schiefgegangen. Schau in die Logs.")
+                await update.message.reply_text("Something went wrong. Check the logs.")
             return None
 
     return wrapper
@@ -77,4 +77,4 @@ def fmt_http_error(response: httpx.Response) -> str:
         detail = body.get("detail", "")
     except Exception:
         detail = response.text[:200]
-    return f"API-Fehler {response.status_code}: {detail}"
+    return f"API error {response.status_code}: {detail}"
