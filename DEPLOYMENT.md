@@ -155,6 +155,38 @@ docker compose -f docker-compose.prod.yml up -d
 docker compose -f docker-compose.prod.yml exec api uv run alembic upgrade head
 ```
 
+## 9b. Enabling Phase 2 capabilities
+
+Phase 2 adds finance automation behind feature flags. Each module needs
+its flag set to `true` AND its credential present, otherwise it logs a
+"skipped" line and the bot/scheduler/API stay healthy.
+
+```bash
+# After deploying, edit .env to opt into the modules you want:
+# Lexware sync:        FEATURE_LEXWARE_SYNC=true  + LEXWARE_API_KEY
+# UStVA preparation:   FEATURE_USTVA=true
+# Liquidity:           FEATURE_LIQUIDITY=true     + LIQUIDITY_OPENING_BALANCE
+# Mahnwesen:           FEATURE_DUNNING=true       (review BASISZINSSATZ each Jan/Jul!)
+# VIES validation:     FEATURE_VIES=true          + VIES_REQUESTER_VAT_ID
+# DATEV export:        FEATURE_DATEV=true
+
+# Apply the migration that adds the new tables:
+docker compose -f docker-compose.prod.yml exec api uv run alembic upgrade head
+
+# Restart the stack so the new flags take effect:
+docker compose -f docker-compose.prod.yml restart api bot scheduler
+```
+
+After the migration runs, the five seed `RecurringExpense` rows
+(Claude, Lebara, Lexware Office, Google Workspace, Hetzner) will be
+visible at `/web/expenses` and via `/expenses` in Telegram.
+
+Persist `./data/datev/` and `./data/vies/` if you enable the DATEV or
+VIES modules — they write PDF / CSV artifacts there. Mount them as a
+named Docker volume if you use the prod compose file.
+
+See [PHASE2.md](./PHASE2.md) for module-by-module configuration.
+
 ## 10. Troubleshooting
 
 ```bash
