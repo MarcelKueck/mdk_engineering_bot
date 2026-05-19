@@ -14,25 +14,25 @@ I remind you about tax and admin obligations and help with tasks, anchors,
 finance, time tracking, UStVA, Mahnwesen, liquidity, VIES, and DATEV.
 
 *Reminders & tasks*
-• /today · /week · /upcoming N — what's due
-• /list [category] · /details <id> — catalog
-• /done <id> · /skip <id> — set status
-• /anchor <field> <YYYY-MM-DD> · /anchors — anchor dates
-• /pause [hours] · /resume — pause/resume notifications
-• /adhoc — ad-hoc rules
+• `/today` · `/week` · `/upcoming N` — what's due
+• `/list [category]` · `/details <id>` — catalog
+• `/done <id>` · `/skip <id>` — set status
+• `/anchor <field> <YYYY-MM-DD>` · `/anchors` — anchor dates
+• `/pause [hours]` · `/resume` — pause/resume notifications
+• `/adhoc` — ad-hoc rules
 
 *Finance (Phase 2)*
-• /finance — open/overdue invoices, last Lexware sync
-• /sync_now — pull Lexware now
-• /expenses · /expense_add <name> <amount> [cadence] · /expense_edit · /expense_rm
-• /log <hours> [project] [note] · /hours [week|month] · /unbilled
-• /ustva — current quarter preview · /approve_ustva — operator approval
-• /runway (or /liquidity) — runway view from known facts
-• /send_mahnung <invoice-prefix> — approve a Mahnung draft
-• /vat <VAT-ID> — qualified VIES check
-• /datev_export <year> — generate a DATEV pack
+• `/finance` — open/overdue invoices, last Lexware sync
+• `/sync_now` — pull Lexware now
+• `/expenses` · `/expense_add <name> <amount> [cadence]` · `/expense_edit` · `/expense_rm`
+• `/log <hours> [project] [note]` · `/hours [week|month]` · `/unbilled`
+• `/ustva` — current quarter preview · `/approve_ustva` — operator approval
+• `/runway` (or `/liquidity`) — runway view from known facts
+• `/send_mahnung <invoice-prefix>` — approve a Mahnung draft
+• `/vat <VAT-ID>` — qualified VIES check
+• `/datev_export <year>` — generate a DATEV pack
 
-/help — show this help
+`/help` — show this help
 """
 
 
