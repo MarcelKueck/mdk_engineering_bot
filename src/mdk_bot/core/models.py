@@ -187,7 +187,9 @@ class Project(Base):
         UUIDType(), ForeignKey("organizations.id", ondelete="SET NULL")
     )
     status: Mapped[ProjectStatus] = mapped_column(
-        Enum(ProjectStatus, name="project_status"), nullable=False, default=ProjectStatus.LEAD
+        Enum(ProjectStatus, name="project_status", values_callable=lambda x: [e.value for e in x]),
+        nullable=False,
+        default=ProjectStatus.LEAD
     )
     hourly_rate: Mapped[float | None] = mapped_column(Numeric(10, 2))
     scope: Mapped[str | None] = mapped_column(Text)
@@ -219,7 +221,9 @@ class Task(Base):
     description: Mapped[str | None] = mapped_column(Text)
     due_date: Mapped[date | None] = mapped_column(Date, index=True)
     status: Mapped[TaskStatus] = mapped_column(
-        Enum(TaskStatus, name="task_status"), nullable=False, default=TaskStatus.TODO
+        Enum(TaskStatus, name="task_status", values_callable=lambda x: [e.value for e in x]),
+        nullable=False,
+        default=TaskStatus.TODO
     )
     priority: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
     project_id: Mapped[uuid.UUID | None] = mapped_column(
@@ -232,7 +236,9 @@ class Task(Base):
         UUIDType(), ForeignKey("obligation_instances.id", ondelete="SET NULL")
     )
     source: Mapped[TaskSource] = mapped_column(
-        Enum(TaskSource, name="task_source"), nullable=False, default=TaskSource.MANUAL
+        Enum(TaskSource, name="task_source", values_callable=lambda x: [e.value for e in x]),
+        nullable=False,
+        default=TaskSource.MANUAL
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
@@ -274,7 +280,11 @@ class ObligationInstance(Base):
     )
     due_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
     status: Mapped[ObligationInstanceStatus] = mapped_column(
-        Enum(ObligationInstanceStatus, name="obligation_instance_status"),
+        Enum(
+            ObligationInstanceStatus,
+            name="obligation_instance_status",
+            values_callable=lambda x: [e.value for e in x],
+        ),
         nullable=False,
         default=ObligationInstanceStatus.PENDING,
     )
@@ -355,7 +365,10 @@ class AuditLog(Base):
     __tablename__ = "audit_log"
 
     id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
-    actor: Mapped[AuditActor] = mapped_column(Enum(AuditActor, name="audit_actor"), nullable=False)
+    actor: Mapped[AuditActor] = mapped_column(
+        Enum(AuditActor, name="audit_actor", values_callable=lambda x: [e.value for e in x]),
+        nullable=False,
+    )
     action: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
     entity_type: Mapped[str | None] = mapped_column(String(64), index=True)
     entity_id: Mapped[str | None] = mapped_column(String(64), index=True)
