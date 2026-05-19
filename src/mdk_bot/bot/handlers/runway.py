@@ -10,7 +10,6 @@ from mdk_bot.bot.handlers._common import (
     fmt_http_error,
     operator_handler,
     reply,
-    reply_md,
 )
 
 
@@ -30,13 +29,13 @@ async def show(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         )
         return
     lines = [
-        "💧 *Liquidity & runway*",
+        "💧 Liquidity & runway",
         "",
         f"Opening balance: {body['opening_balance']} EUR",
         f"Monthly burn: {body['monthly_burn']} EUR",
     ]
     if body.get("runway_date"):
-        lines.append(f"Covered until: *{body['runway_date']}*")
+        lines.append(f"Covered until: {body['runway_date']}")
     else:
         lines.append("Covered: > 18 months (no negative balance projected)")
     if float(body.get("unbilled_potential", 0)) > 0:
@@ -44,11 +43,18 @@ async def show(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     inflows = body.get("expected_inflows") or []
     if inflows:
         lines.append("")
-        lines.append("*Upcoming inflows*")
+        lines.append("Upcoming inflows:")
         for item in inflows[:10]:
             lines.append(f"• {item['date']}: {item['amount']} EUR — {item.get('label', '')}")
     alerts = body.get("alerts") or []
     for alert in alerts:
-        lines.append("")
-        lines.append(f"⚠️ {alert.get('kind')}: {alert}")
-    await reply_md(update, "\n".join(lines))
+        kind = alert.get("kind", "alert")
+        if kind == "runway_short":
+            days = alert.get("days", "?")
+            date_ = alert.get("runway_date", "?")
+            lines.append("")
+            lines.append(f"⚠️ Runway short: {days} days (covered through {date_})")
+        else:
+            lines.append("")
+            lines.append(f"⚠️ {kind}")
+    await reply(update, "\n".join(lines))

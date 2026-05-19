@@ -92,24 +92,29 @@ class LexwareClient:
                 yield item
 
     async def list_invoices(self) -> AsyncIterator[dict[str, Any]]:
-        """Yield every invoice voucher (status filter `paid|open|overdue`)."""
+        """Yield every outgoing invoice voucher (status filter `paid|open|overdue`).
+
+        Uses the current ``salesinvoice`` voucherType — the older ``invoice``
+        alias returns 400 against today's API. Drafts are excluded because
+        only committed records are worth mirroring.
+        """
         async for page in self._paginate(
             "/voucherlist",
             params={
-                "voucherType": "invoice",
-                "voucherStatus": "open,paid,overdue,draft",
+                "voucherType": "salesinvoice",
+                "voucherStatus": "open,paid,overdue",
             },
         ):
             for item in page.get("content", []):
                 yield item
 
     async def list_vouchers(self) -> AsyncIterator[dict[str, Any]]:
-        """Yield every receipt voucher (expense type)."""
+        """Yield every incoming receipt voucher (expense type)."""
         async for page in self._paginate(
             "/voucherlist",
             params={
-                "voucherType": "purchaseinvoice,purchasecreditnote",
-                "voucherStatus": "open,paid,overdue,draft",
+                "voucherType": "purchaseinvoice",
+                "voucherStatus": "open,paid,overdue",
             },
         ):
             for item in page.get("content", []):
@@ -145,7 +150,7 @@ class LexwareClient:
                 raise LexwareError(f"GET {path} returned 404")
             if response.status_code >= 400:
                 raise LexwareError(
-                    f"GET {path} returned {response.status_code}: {response.text[:200]}"
+                    f"GET {path} returned {response.status_code}: {response.text[:800]}"
                 )
             body = response.json()
             yield body
