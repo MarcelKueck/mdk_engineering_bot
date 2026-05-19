@@ -9,6 +9,7 @@ The app exposes:
 
 from __future__ import annotations
 
+import asyncio
 import traceback
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -50,12 +51,21 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         config=settings.safe_dump(),
     )
     # Trigger lazy engine construction so failures surface at startup.
+    # Retry a few times so a slow Docker DNS resolution or a Postgres
+    # container that is still starting does not produce a spurious warning.
     engine = get_engine()
-    try:
-        async with engine.connect() as conn:
-            await conn.execute(text("SELECT 1"))
-    except Exception as exc:  # pragma: no cover - integration only
-        log.warning("api.db_unreachable_at_startup", error=str(exc))
+    last_exc: Exception | None = None
+    for attempt in range(5):
+        try:
+            async with engine.connect() as conn:
+                await conn.execute(text("SELECT 1"))
+            last_exc = None
+            break
+        except Exception as exc:  # pragma: no cover - integration only
+            last_exc = exc
+            await asyncio.sleep(1.0 + attempt)
+    if last_exc is not None:  # pragma: no cover - integration only
+        log.warning("api.db_unreachable_at_startup", error=str(last_exc))
 
     yield
 
