@@ -92,33 +92,30 @@ class LexwareClient:
                 yield item
 
     async def list_invoices(self) -> AsyncIterator[dict[str, Any]]:
-        """Yield every outgoing invoice voucher (status filter `paid|open|overdue`).
+        """Yield every outgoing invoice voucher.
 
         Uses the current ``salesinvoice`` voucherType — the older ``invoice``
-        alias returns 400 against today's API. Drafts are excluded because
-        only committed records are worth mirroring.
+        alias returns 400 against today's API. lexoffice forbids combining
+        ``overdue`` with other statuses, so we issue two separate queries.
+        Drafts are excluded because only committed records are worth mirroring.
         """
-        async for page in self._paginate(
-            "/voucherlist",
-            params={
-                "voucherType": "salesinvoice",
-                "voucherStatus": "open,paid,overdue",
-            },
-        ):
-            for item in page.get("content", []):
-                yield item
+        for status_group in ("open,paid", "overdue"):
+            async for page in self._paginate(
+                "/voucherlist",
+                params={"voucherType": "salesinvoice", "voucherStatus": status_group},
+            ):
+                for item in page.get("content", []):
+                    yield item
 
     async def list_vouchers(self) -> AsyncIterator[dict[str, Any]]:
         """Yield every incoming receipt voucher (expense type)."""
-        async for page in self._paginate(
-            "/voucherlist",
-            params={
-                "voucherType": "purchaseinvoice",
-                "voucherStatus": "open,paid,overdue",
-            },
-        ):
-            for item in page.get("content", []):
-                yield item
+        for status_group in ("open,paid", "overdue"):
+            async for page in self._paginate(
+                "/voucherlist",
+                params={"voucherType": "purchaseinvoice", "voucherStatus": status_group},
+            ):
+                for item in page.get("content", []):
+                    yield item
 
     async def list_transactions(self) -> AsyncIterator[dict[str, Any]]:
         """Yield bank transactions if exposed (lexoffice may 404 — handled)."""
