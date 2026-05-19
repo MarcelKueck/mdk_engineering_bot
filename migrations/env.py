@@ -8,8 +8,8 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from mdk_bot.config import get_settings
-from mdk_bot.core.db import Base
 from mdk_bot.core import models  # noqa: F401  -- register models on Base.metadata
+from mdk_bot.core.db import Base
 
 config = context.config
 
