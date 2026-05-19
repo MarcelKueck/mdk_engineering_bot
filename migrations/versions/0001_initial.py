@@ -129,7 +129,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "status",
-            sa.Enum(name="project_status", create_type=False),
+            postgresql.ENUM(name="project_status", create_type=False),
             nullable=False,
             server_default="lead",
         ),
@@ -193,7 +193,7 @@ def upgrade() -> None:
         sa.Column("due_date", sa.Date, nullable=False),
         sa.Column(
             "status",
-            sa.Enum(name="obligation_instance_status", create_type=False),
+            postgresql.ENUM(name="obligation_instance_status", create_type=False),
             nullable=False,
             server_default="pending",
         ),
@@ -225,7 +225,7 @@ def upgrade() -> None:
         sa.Column("due_date", sa.Date, index=True),
         sa.Column(
             "status",
-            sa.Enum(name="task_status", create_type=False),
+            postgresql.ENUM(name="task_status", create_type=False),
             nullable=False,
             server_default="todo",
         ),
@@ -247,7 +247,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "source",
-            sa.Enum(name="task_source", create_type=False),
+            postgresql.ENUM(name="task_source", create_type=False),
             nullable=False,
             server_default="manual",
         ),
@@ -327,7 +327,7 @@ def upgrade() -> None:
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column(
             "actor",
-            sa.Enum(name="audit_actor", create_type=False),
+            postgresql.ENUM(name="audit_actor", create_type=False),
             nullable=False,
         ),
         sa.Column("action", sa.String(128), nullable=False),
