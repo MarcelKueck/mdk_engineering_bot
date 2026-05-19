@@ -129,9 +129,7 @@ async def get_pause(session: AsyncSession = SessionDep) -> dict[str, Any]:
 
 
 @pause_router.put("", status_code=status.HTTP_200_OK)
-async def set_pause(
-    payload: dict[str, Any], session: AsyncSession = SessionDep
-) -> dict[str, Any]:
+async def set_pause(payload: dict[str, Any], session: AsyncSession = SessionDep) -> dict[str, Any]:
     from datetime import datetime
 
     until = payload.get("paused_until")

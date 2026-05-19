@@ -110,6 +110,47 @@ class AuditActor(str, enum.Enum):
     AGENT = "agent"
 
 
+# -- Phase 2 enums --------------------------------------------------------
+
+
+class InvoiceStatus(str, enum.Enum):
+    DRAFT = "draft"
+    OPEN = "open"
+    PAID = "paid"
+    OVERDUE = "overdue"
+    CANCELLED = "cancelled"
+
+
+class ReceiptStatus(str, enum.Enum):
+    PENDING = "pending"
+    MATCHED = "matched"
+    MISSING = "missing"
+
+
+class TransactionStatus(str, enum.Enum):
+    UNMATCHED = "unmatched"
+    MATCHED = "matched"
+    IGNORED = "ignored"
+
+
+class TransactionDirection(str, enum.Enum):
+    IN = "in"
+    OUT = "out"
+
+
+class ExpenseCadence(str, enum.Enum):
+    MONTHLY = "monthly"
+    QUARTERLY = "quarterly"
+    YEARLY = "yearly"
+
+
+class UstvaStatus(str, enum.Enum):
+    PREPARING = "preparing"
+    REVIEW = "review"
+    APPROVED = "approved"
+    SUBMITTED = "submitted"
+
+
 # ---------------------------------------------------------------------------
 # Business tables
 # ---------------------------------------------------------------------------
@@ -189,7 +230,7 @@ class Project(Base):
     status: Mapped[ProjectStatus] = mapped_column(
         Enum(ProjectStatus, name="project_status", values_callable=lambda x: [e.value for e in x]),
         nullable=False,
-        default=ProjectStatus.LEAD
+        default=ProjectStatus.LEAD,
     )
     hourly_rate: Mapped[float | None] = mapped_column(Numeric(10, 2))
     scope: Mapped[str | None] = mapped_column(Text)
@@ -223,7 +264,7 @@ class Task(Base):
     status: Mapped[TaskStatus] = mapped_column(
         Enum(TaskStatus, name="task_status", values_callable=lambda x: [e.value for e in x]),
         nullable=False,
-        default=TaskStatus.TODO
+        default=TaskStatus.TODO,
     )
     priority: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
     project_id: Mapped[uuid.UUID | None] = mapped_column(
@@ -238,7 +279,7 @@ class Task(Base):
     source: Mapped[TaskSource] = mapped_column(
         Enum(TaskSource, name="task_source", values_callable=lambda x: [e.value for e in x]),
         nullable=False,
-        default=TaskSource.MANUAL
+        default=TaskSource.MANUAL,
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
@@ -385,7 +426,8 @@ class AuditLog(Base):
 
 
 class Conversation(Base):
-    """Future: conversation thread (Telegram, email, chat) — see Phase 2."""
+    """Conversation thread (Telegram, email, chat). Phase 2 uses these to log
+    outgoing dunning emails until Gmail integration ships in Phase 3."""
 
     __tablename__ = "conversations"
     id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
@@ -402,7 +444,7 @@ class Conversation(Base):
 
 
 class Message(Base):
-    """Future: individual message in a :class:`Conversation`."""
+    """Individual message in a :class:`Conversation`."""
 
     __tablename__ = "messages"
     id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
@@ -435,23 +477,44 @@ class Document(Base):
 
 
 class Transaction(Base):
-    """Future: bank / payment transaction."""
+    """Bank / payment transaction (Phase 2: mirrored from Lexware)."""
 
     __tablename__ = "transactions"
     id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
     tenant_id: Mapped[uuid.UUID] = mapped_column(
         UUIDType(), nullable=False, default=_default_tenant_id
     )
+    account: Mapped[str | None] = mapped_column(String(64))
     booked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     amount: Mapped[float | None] = mapped_column(Numeric(12, 2))
     currency: Mapped[str | None] = mapped_column(String(8))
     counterparty: Mapped[str | None] = mapped_column(String(255))
     reference: Mapped[str | None] = mapped_column(String(255))
+    lexware_match_id: Mapped[str | None] = mapped_column(String(64))
+    project_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUIDType(), ForeignKey("projects.id", ondelete="SET NULL")
+    )
+    status: Mapped[TransactionStatus] = mapped_column(
+        Enum(
+            TransactionStatus,
+            name="transaction_status",
+            values_callable=lambda x: [e.value for e in x],
+        ),
+        nullable=False,
+        default=TransactionStatus.UNMATCHED,
+    )
+    direction: Mapped[TransactionDirection | None] = mapped_column(
+        Enum(
+            TransactionDirection,
+            name="transaction_direction",
+            values_callable=lambda x: [e.value for e in x],
+        )
+    )
     metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONType(), nullable=False, default=dict)
 
 
 class Invoice(Base):
-    """Future: invoice (mirror of Lexware record + augmentation)."""
+    """Outgoing invoice — mirror of a Lexware Office voucher."""
 
     __tablename__ = "invoices"
     id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
@@ -463,28 +526,236 @@ class Invoice(Base):
     customer_org_id: Mapped[uuid.UUID | None] = mapped_column(
         UUIDType(), ForeignKey("organizations.id", ondelete="SET NULL")
     )
-    issued_on: Mapped[date | None] = mapped_column(Date)
-    due_on: Mapped[date | None] = mapped_column(Date)
-    total: Mapped[float | None] = mapped_column(Numeric(12, 2))
-    status: Mapped[str | None] = mapped_column(String(32))
+    project_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUIDType(), ForeignKey("projects.id", ondelete="SET NULL")
+    )
+    issue_date: Mapped[date | None] = mapped_column(Date)
+    due_date: Mapped[date | None] = mapped_column(Date, index=True)
+    total_gross: Mapped[float | None] = mapped_column(Numeric(12, 2))
+    total_net: Mapped[float | None] = mapped_column(Numeric(12, 2))
+    currency: Mapped[str] = mapped_column(String(8), nullable=False, default="EUR")
+    status: Mapped[InvoiceStatus] = mapped_column(
+        Enum(InvoiceStatus, name="invoice_status", values_callable=lambda x: [e.value for e in x]),
+        nullable=False,
+        default=InvoiceStatus.DRAFT,
+    )
+    paid_date: Mapped[date | None] = mapped_column(Date)
+    mahnstufe: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    last_mahnung_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONType(), nullable=False, default=dict)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()
+    )
 
 
 class Receipt(Base):
-    """Future: incoming receipt to attach to a transaction."""
+    """Incoming receipt — mirror of a Lexware voucher (expense)."""
 
     __tablename__ = "receipts"
     id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
     tenant_id: Mapped[uuid.UUID] = mapped_column(
         UUIDType(), nullable=False, default=_default_tenant_id
     )
-    vendor: Mapped[str | None] = mapped_column(String(255))
-    amount: Mapped[float | None] = mapped_column(Numeric(12, 2))
-    captured_on: Mapped[date | None] = mapped_column(Date)
+    lexware_id: Mapped[str | None] = mapped_column(String(64), index=True)
+    vendor_org_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUIDType(), ForeignKey("organizations.id", ondelete="SET NULL")
+    )
+    project_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUIDType(), ForeignKey("projects.id", ondelete="SET NULL")
+    )
+    date: Mapped[date | None] = mapped_column(Date, index=True)
+    total: Mapped[float | None] = mapped_column(Numeric(12, 2))
+    vat: Mapped[float | None] = mapped_column(Numeric(12, 2))
+    category: Mapped[str | None] = mapped_column(String(64))
     document_id: Mapped[uuid.UUID | None] = mapped_column(
         UUIDType(), ForeignKey("documents.id", ondelete="SET NULL")
     )
+    status: Mapped[ReceiptStatus] = mapped_column(
+        Enum(ReceiptStatus, name="receipt_status", values_callable=lambda x: [e.value for e in x]),
+        nullable=False,
+        default=ReceiptStatus.PENDING,
+    )
     metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONType(), nullable=False, default=dict)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()
+    )
+
+
+class RecurringExpense(Base):
+    """Operator-managed catalog of recurring costs (subscriptions etc.)."""
+
+    __tablename__ = "recurring_expenses"
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
+    tenant_id: Mapped[uuid.UUID] = mapped_column(
+        UUIDType(), nullable=False, default=_default_tenant_id, index=True
+    )
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    amount: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
+    currency: Mapped[str] = mapped_column(String(8), nullable=False, default="EUR")
+    cadence: Mapped[ExpenseCadence] = mapped_column(
+        Enum(
+            ExpenseCadence,
+            name="expense_cadence",
+            values_callable=lambda x: [e.value for e in x],
+        ),
+        nullable=False,
+        default=ExpenseCadence.MONTHLY,
+    )
+    vendor_org_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUIDType(), ForeignKey("organizations.id", ondelete="SET NULL")
+    )
+    category: Mapped[str | None] = mapped_column(String(64))
+    vat_rate: Mapped[float | None] = mapped_column(Numeric(5, 2))
+    active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    effective_from: Mapped[date | None] = mapped_column(Date)
+    effective_until: Mapped[date | None] = mapped_column(Date)
+    next_amount: Mapped[float | None] = mapped_column(Numeric(12, 2))
+    next_amount_effective_from: Mapped[date | None] = mapped_column(Date)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()
+    )
+
+
+class TimeEntry(Base):
+    """Operator-logged work time (replaces an external timer like Toggl)."""
+
+    __tablename__ = "time_entries"
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
+    tenant_id: Mapped[uuid.UUID] = mapped_column(
+        UUIDType(), nullable=False, default=_default_tenant_id, index=True
+    )
+    date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
+    hours: Mapped[float] = mapped_column(Numeric(6, 2), nullable=False)
+    project_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUIDType(), ForeignKey("projects.id", ondelete="SET NULL")
+    )
+    note: Mapped[str | None] = mapped_column(Text)
+    billable: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    billed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    invoice_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUIDType(), ForeignKey("invoices.id", ondelete="SET NULL")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()
+    )
+
+
+class VatValidation(Base):
+    """One VIES qualified query result, retained as audit evidence."""
+
+    __tablename__ = "vat_validations"
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
+    tenant_id: Mapped[uuid.UUID] = mapped_column(
+        UUIDType(), nullable=False, default=_default_tenant_id, index=True
+    )
+    vat_id_queried: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    requester_vat_id: Mapped[str | None] = mapped_column(String(32))
+    valid: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    name_match: Mapped[str | None] = mapped_column(String(16))
+    address_match: Mapped[str | None] = mapped_column(String(16))
+    consultation_number: Mapped[str | None] = mapped_column(String(64))
+    raw_response: Mapped[dict[str, Any]] = mapped_column(JSONType(), nullable=False, default=dict)
+    invoice_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUIDType(), ForeignKey("invoices.id", ondelete="SET NULL")
+    )
+    pdf_storage_key: Mapped[str | None] = mapped_column(String(512))
+    queried_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+
+class UstvaPeriod(Base):
+    """Quarterly UStVA Vorbereitung — one row per quarter per tenant."""
+
+    __tablename__ = "ustva_periods"
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
+    tenant_id: Mapped[uuid.UUID] = mapped_column(
+        UUIDType(), nullable=False, default=_default_tenant_id, index=True
+    )
+    year: Mapped[int] = mapped_column(Integer, nullable=False)
+    quarter: Mapped[int] = mapped_column(Integer, nullable=False)
+    period_start: Mapped[date] = mapped_column(Date, nullable=False)
+    period_end: Mapped[date] = mapped_column(Date, nullable=False)
+    status: Mapped[UstvaStatus] = mapped_column(
+        Enum(UstvaStatus, name="ustva_status", values_callable=lambda x: [e.value for e in x]),
+        nullable=False,
+        default=UstvaStatus.PREPARING,
+    )
+    payload: Mapped[dict[str, Any]] = mapped_column(JSONType(), nullable=False, default=dict)
+    missing_receipts: Mapped[list[dict[str, Any]]] = mapped_column(
+        JSONType(), nullable=False, default=list
+    )
+    preview_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    submitted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "year", "quarter", name="uq_ustva_tenant_year_quarter"),
+        CheckConstraint("quarter BETWEEN 1 AND 4", name="ck_ustva_quarter_range"),
+    )
+
+
+class DunningRun(Base):
+    """One Mahnung instance — a draft prepared for operator approval."""
+
+    __tablename__ = "dunning_runs"
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
+    tenant_id: Mapped[uuid.UUID] = mapped_column(
+        UUIDType(), nullable=False, default=_default_tenant_id, index=True
+    )
+    invoice_id: Mapped[uuid.UUID] = mapped_column(
+        UUIDType(), ForeignKey("invoices.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    mahnstufe: Mapped[int] = mapped_column(Integer, nullable=False)
+    draft_text: Mapped[str] = mapped_column(Text, nullable=False)
+    interest_amount: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False, default=0)
+    fee_amount: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False, default=0)
+    sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    conversation_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUIDType(), ForeignKey("conversations.id", ondelete="SET NULL")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+    __table_args__ = (UniqueConstraint("invoice_id", "mahnstufe", name="uq_dunning_invoice_stufe"),)
+
+
+class LiquiditySnapshot(Base):
+    """Weekly liquidity & runway snapshot computed from known facts."""
+
+    __tablename__ = "liquidity_snapshots"
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType(), primary_key=True, default=_new_uuid)
+    tenant_id: Mapped[uuid.UUID] = mapped_column(
+        UUIDType(), nullable=False, default=_default_tenant_id, index=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now(), index=True
+    )
+    opening_balance: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
+    runway_date: Mapped[date | None] = mapped_column(Date)
+    scheduled_outflows: Mapped[list[dict[str, Any]]] = mapped_column(
+        JSONType(), nullable=False, default=list
+    )
+    expected_inflows: Mapped[list[dict[str, Any]]] = mapped_column(
+        JSONType(), nullable=False, default=list
+    )
+    alerts: Mapped[list[dict[str, Any]]] = mapped_column(JSONType(), nullable=False, default=list)
 
 
 class Event(Base):
