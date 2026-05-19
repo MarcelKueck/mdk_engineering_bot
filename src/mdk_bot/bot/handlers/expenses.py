@@ -12,6 +12,7 @@ from mdk_bot.bot.handlers._common import (
     api_client_ctx,
     fmt_http_error,
     operator_handler,
+    reply,
     reply_md,
 )
 
@@ -23,7 +24,7 @@ async def list_expenses(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         resp = await api.get("/expenses", params={"active_only": True})
         burn_resp = await api.get("/expenses/_meta/monthly_burn")
     if resp.status_code != 200:
-        await reply_md(update, fmt_http_error(resp))
+        await reply(update, fmt_http_error(resp))
         return
     items = resp.json()
     lines = ["📒 *Recurring expenses*", ""]
@@ -73,7 +74,7 @@ async def add_expense(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
             json={"name": name, "amount": float(amount), "cadence": cadence},
         )
     if resp.status_code != 201:
-        await reply_md(update, fmt_http_error(resp))
+        await reply(update, fmt_http_error(resp))
         return
     body = resp.json()
     await reply_md(
@@ -101,7 +102,7 @@ async def edit_expense(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     async with api_client_ctx() as api:
         resp = await api.put(f"/expenses/{expense_id}", json={"amount": float(amount)})
     if resp.status_code != 200:
-        await reply_md(update, fmt_http_error(resp))
+        await reply(update, fmt_http_error(resp))
         return
     body = resp.json()
     await reply_md(update, f"✏️ Updated `{body['id'][:8]}` → {body['amount']} EUR")
@@ -121,7 +122,7 @@ async def rm_expense(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     async with api_client_ctx() as api:
         resp = await api.put(f"/expenses/{expense_id}", json={"active": False})
     if resp.status_code != 200:
-        await reply_md(update, fmt_http_error(resp))
+        await reply(update, fmt_http_error(resp))
         return
     await reply_md(update, f"🗑 Deactivated `{str(expense_id)[:8]}`.")
 

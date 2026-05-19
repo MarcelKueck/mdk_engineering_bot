@@ -11,6 +11,7 @@ from mdk_bot.bot.handlers._common import (
     api_client_ctx,
     fmt_http_error,
     operator_handler,
+    reply,
     reply_md,
 )
 
@@ -32,7 +33,7 @@ async def set_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     async with api_client_ctx() as api:
         resp = await api.put(f"/anchors/{field_name}", json={"date_value": parsed.isoformat()})
         if resp.status_code != 200:
-            await reply_md(update, fmt_http_error(resp))
+            await reply(update, fmt_http_error(resp))
             return
 
     await reply_md(update, f"⚓ Anchor set: `{field_name}` = `{parsed.isoformat()}`")
@@ -44,7 +45,7 @@ async def list_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     async with api_client_ctx() as api:
         resp = await api.get("/anchors")
         if resp.status_code != 200:
-            await reply_md(update, fmt_http_error(resp))
+            await reply(update, fmt_http_error(resp))
             return
 
     anchors = resp.json()

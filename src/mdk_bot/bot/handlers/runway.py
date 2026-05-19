@@ -9,6 +9,7 @@ from mdk_bot.bot.handlers._common import (
     api_client_ctx,
     fmt_http_error,
     operator_handler,
+    reply,
     reply_md,
 )
 
@@ -18,14 +19,14 @@ async def show(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     async with api_client_ctx() as api:
         resp = await api.get("/liquidity/current")
     if resp.status_code != 200:
-        await reply_md(update, fmt_http_error(resp))
+        await reply(update, fmt_http_error(resp))
         return
     body = resp.json()
     if not body.get("enabled"):
-        await reply_md(
+        await reply(
             update,
             f"💧 Liquidity not configured: {body.get('reason', '?')}\n\n"
-            f"Set `LIQUIDITY_OPENING_BALANCE` and `FEATURE_LIQUIDITY=true` to enable.",
+            f"Set LIQUIDITY_OPENING_BALANCE and FEATURE_LIQUIDITY=true to enable.",
         )
         return
     lines = [

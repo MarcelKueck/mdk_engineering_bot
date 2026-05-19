@@ -11,6 +11,7 @@ from mdk_bot.bot.handlers._common import (
     api_client_ctx,
     fmt_http_error,
     operator_handler,
+    reply,
     reply_md,
 )
 
@@ -30,7 +31,7 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             await reply_md(update, f"Unknown ID: `{obligation_id}`")
             return
         if resp.status_code != 200:
-            await reply_md(update, fmt_http_error(resp))
+            await reply(update, fmt_http_error(resp))
             return
 
     o = resp.json()

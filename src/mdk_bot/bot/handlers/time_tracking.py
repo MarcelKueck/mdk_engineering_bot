@@ -11,6 +11,7 @@ from mdk_bot.bot.handlers._common import (
     api_client_ctx,
     fmt_http_error,
     operator_handler,
+    reply,
     reply_md,
 )
 from mdk_bot.core.time import today_local
@@ -62,7 +63,7 @@ async def log(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     async with api_client_ctx() as api:
         resp = await api.post("/time", json=payload)
     if resp.status_code != 201:
-        await reply_md(update, fmt_http_error(resp))
+        await reply(update, fmt_http_error(resp))
         return
     await reply_md(update, f"⏱ Logged {hours}h.")
 
@@ -77,7 +78,7 @@ async def hours(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     async with api_client_ctx() as api:
         resp = await api.get("/time/_meta/summary", params={"window": window})
     if resp.status_code != 200:
-        await reply_md(update, fmt_http_error(resp))
+        await reply(update, fmt_http_error(resp))
         return
     body = resp.json()
     lines = [
@@ -103,7 +104,7 @@ async def unbilled(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         list_resp = await api.get("/time", params={"unbilled_only": True})
         value_resp = await api.get("/time/_meta/unbilled")
     if list_resp.status_code != 200:
-        await reply_md(update, fmt_http_error(list_resp))
+        await reply(update, fmt_http_error(list_resp))
         return
     entries = list_resp.json()
     by_project: dict[str, float] = {}

@@ -9,6 +9,7 @@ from mdk_bot.bot.handlers._common import (
     api_client_ctx,
     fmt_http_error,
     operator_handler,
+    reply,
     reply_md,
 )
 from mdk_bot.core.time import today_local
@@ -21,11 +22,11 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     async with api_client_ctx() as api:
         inst_resp = await api.get("/obligation-instances/upcoming", params={"days": 1})
         if inst_resp.status_code != 200:
-            await reply_md(update, fmt_http_error(inst_resp))
+            await reply(update, fmt_http_error(inst_resp))
             return
         tasks_resp = await api.get("/tasks")
         if tasks_resp.status_code != 200:
-            await reply_md(update, fmt_http_error(tasks_resp))
+            await reply(update, fmt_http_error(tasks_resp))
             return
 
     instances = [i for i in inst_resp.json() if i["due_date"] == today.isoformat()]

@@ -9,6 +9,7 @@ from mdk_bot.bot.handlers._common import (
     api_client_ctx,
     fmt_http_error,
     operator_handler,
+    reply,
     reply_md,
 )
 
@@ -19,11 +20,11 @@ async def finance(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     async with api_client_ctx() as api:
         resp = await api.get("/finance/summary")
     if resp.status_code != 200:
-        await reply_md(update, fmt_http_error(resp))
+        await reply(update, fmt_http_error(resp))
         return
     body = resp.json()
     if not body.get("lexware_enabled"):
-        await reply_md(
+        await reply(
             update,
             f"💼 Lexware not configured: {body.get('lexware_disabled_reason', '?')}",
         )
@@ -48,7 +49,7 @@ async def sync_now(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     async with api_client_ctx() as api:
         resp = await api.post("/finance/sync")
     if resp.status_code != 200:
-        await reply_md(update, fmt_http_error(resp))
+        await reply(update, fmt_http_error(resp))
         return
     stats = resp.json()
     lines = ["🔄 *Lexware sync complete*", ""]
