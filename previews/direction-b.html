@@ -1,0 +1,627 @@
+<!--
+Concept: Linienschreiber (Direction B)
+The chart recorder is the one instrument every head of lab automation has actually stood and watched for hours — a continuous trace reads as lab-native at first glance, where gradients and neon read as AI fashion.
+One ink line with a single red-flagged anomaly is the Intelligent Supervision pitch drawn instead of claimed: the site demonstrates "we see the drift before the error code" without a word of hype.
+Ink on paper matches the voice exactly — calm, precise, Mittelstand restraint — and a warm light ground is the visible opposite of the dark-oscilloscope AI template, which makes it screenshotable for the right reasons.
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>MDK Engineering — Linienschreiber (Direction B preview)</title>
+<meta name="description" content="MDK Engineering, Munich: an independent engineering studio making European labs agent-ready. Agent-readiness audits, integration of legacy instruments, safety envelopes, and intelligent supervision for the MHS era.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ============ Linienschreiber — tokens ============ */
+:root{
+  --papier:#FAF7F0;       /* page ground, warm chart-paper cream */
+  --raster-fein:#ECE7D8;  /* minor gridlines, trace channel only */
+  --raster-stark:#D6CFBD; /* major gridlines, section hairlines, frame borders */
+  --tinte:#1E2A32;        /* headlines and body, blue-black ink */
+  --blau:#1D4E89;         /* the pen trace, links, primary button */
+  --rot:#B23A2B;          /* the single anomaly, nothing else */
+  --graphit:#5A6157;      /* secondary text, captions, mono annotations */
+  --ch:72px;              /* trace channel width */
+  --gutter:48px;          /* channel-to-content gutter */
+  --pad:clamp(12px,4vw,32px); /* wrap padding — the channel grid aligns to this */
+  --maxw:1120px;
+  --sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+@media (max-width:720px){
+  :root{ --ch:28px; --gutter:16px; }
+}
+
+/* ============ base ============ */
+*,*::before,*::after{ box-sizing:border-box; }
+html{ scroll-behavior:smooth; overflow-x:clip; }
+body{
+  margin:0;
+  background:var(--papier);
+  color:var(--tinte);
+  font:400 1.0625rem/1.65 var(--sans);
+  overflow-x:clip;
+  -webkit-text-size-adjust:100%;
+}
+.wrap{ max-width:var(--maxw); margin-inline:auto; padding-inline:var(--pad); }
+h1,h2,h3{ text-wrap:balance; }
+p{ max-width:68ch; margin:0 0 1rem; }
+a{ color:var(--blau); text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:3px; }
+a:hover{ color:var(--tinte); }
+:focus-visible{ outline:2px solid var(--blau); outline-offset:3px; border-radius:2px; }
+.mono{ font-family:var(--mono); }
+.skip{
+  position:absolute; left:-9999px; top:0; background:var(--papier); color:var(--blau);
+  padding:.5rem .75rem; font-family:var(--mono); font-size:.8125rem; z-index:20;
+}
+.skip:focus-visible{ left:8px; top:8px; }
+
+/* ============ header ============ */
+.site{ border-bottom:1px solid var(--raster-stark); }
+.site-inner{
+  display:flex; align-items:baseline; justify-content:space-between; gap:.75rem 1.25rem;
+  flex-wrap:wrap; padding-block:1.05rem;
+}
+.brand{
+  font-weight:600; font-size:1rem; letter-spacing:-0.01em;
+  color:var(--tinte); text-decoration:none;
+}
+.site nav{ display:flex; gap:clamp(.8rem,2.5vw,1.6rem); flex-wrap:wrap; }
+.site nav a{
+  font-family:var(--mono); font-size:.75rem; letter-spacing:.04em; text-transform:uppercase;
+  color:var(--graphit); text-decoration:none;
+}
+.site nav a:hover{ color:var(--blau); }
+
+/* ============ the strip: channel + bands ============ */
+main{ position:relative; }
+/* continuous chart-paper grid, confined to the channel */
+main::before{
+  content:""; position:absolute; top:0; bottom:0; left:var(--pad); width:var(--ch);
+  background-color:var(--papier);
+  background-image:
+    repeating-linear-gradient(to bottom, transparent 0, transparent 7px, var(--raster-fein) 7px, var(--raster-fein) 8px),
+    repeating-linear-gradient(to bottom, transparent 0, transparent 39px, var(--raster-stark) 39px, var(--raster-stark) 40px);
+  border-left:1px solid var(--raster-stark);
+  border-right:1px solid var(--raster-stark);
+  pointer-events:none;
+}
+section{ position:relative; }
+section.sec{ border-top:1px solid var(--raster-stark); } /* the tick line crossing the channel */
+.band{
+  position:relative;
+  display:grid;
+  grid-template-columns:var(--ch) minmax(0,1fr);
+  column-gap:var(--gutter);
+}
+.seg{ position:relative; }
+.seg svg{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+.trace path{
+  fill:none; stroke:var(--blau); stroke-width:2px; stroke-linecap:round;
+  vector-effect:non-scaling-stroke;
+}
+/* pen marks — HTML so non-uniform SVG scaling never distorts them */
+.mark{ position:absolute; transform:translate(-50%,-50%); }
+.dot{ width:9px; height:9px; border-radius:50%; background:var(--blau); }
+.dot-open{ width:11px; height:11px; border-radius:50%; border:2px solid var(--blau); background:var(--papier); }
+.dot-pulse{ width:9px; height:9px; border-radius:50%; background:var(--blau); }
+.ring{ width:26px; height:26px; border-radius:50%; border:1.5px solid var(--rot); }
+.flag{
+  position:absolute; left:0; top:30.5%;
+  width:calc(100% + var(--gutter) - 6px);
+  border-top:1px dashed var(--rot);
+}
+@media (max-width:720px){
+  .ring{ width:14px; height:14px; }
+}
+
+.content{ padding-block:clamp(2.75rem,6vw,4.5rem); min-width:0; }
+.hero .content{ padding-block:clamp(3.25rem,8vw,5.5rem) clamp(3rem,7vw,5rem); }
+
+/* timestamps — always in content flow, so the 28px mobile channel stays clean */
+.stamp{
+  display:flex; align-items:center; gap:.6rem; margin:0 0 .4rem;
+  font-family:var(--mono); font-size:.75rem; letter-spacing:.04em; color:var(--graphit);
+}
+.stamp::before{ content:""; width:22px; height:1px; background:var(--graphit); opacity:.55; flex:none; }
+
+/* ============ type scale ============ */
+h1{
+  font-size:clamp(2.25rem,6vw,4rem); font-weight:600; letter-spacing:-0.01em;
+  line-height:1.05; margin:.7rem 0 1.15rem; max-width:20ch;
+}
+h2{
+  font-size:clamp(1.5rem,3.4vw,2.125rem); font-weight:600; letter-spacing:-0.01em;
+  line-height:1.15; margin:.55rem 0 .95rem;
+}
+h3{ font-size:1.1875rem; font-weight:600; line-height:1.3; margin:0 0 .5rem; }
+.lede{ font-size:1.125rem; max-width:60ch; }
+.lbl{
+  font-family:var(--mono); font-size:.75rem; font-weight:500; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--graphit); margin:0 0 .4rem;
+}
+.quiet{ font-family:var(--mono); font-size:.75rem; letter-spacing:.04em; color:var(--graphit); }
+
+/* ============ CTAs ============ */
+.btn{
+  display:inline-block; background:var(--blau); color:var(--papier);
+  font-family:var(--mono); font-size:.8125rem; font-weight:500;
+  letter-spacing:.04em; text-transform:uppercase;
+  padding:.9rem 1.4rem; border-radius:2px; text-decoration:none;
+}
+.btn:hover{ background:var(--tinte); color:var(--papier); }
+.cta-row{ display:flex; align-items:center; gap:1.25rem 1.75rem; flex-wrap:wrap; margin:1.6rem 0 1.1rem; }
+.cta-row .minor{ font-family:var(--mono); font-size:.8125rem; letter-spacing:.02em; }
+
+/* ============ hero DE variant ============ */
+.de{
+  margin-top:2.4rem; padding-top:1.3rem; border-top:1px solid var(--raster-stark); max-width:56ch;
+}
+.de-tag{
+  display:inline-block; font-family:var(--mono); font-size:.6875rem; font-weight:500;
+  letter-spacing:.08em; color:var(--graphit); border:1px solid var(--graphit);
+  border-radius:2px; padding:1px 7px; margin-bottom:.55rem;
+}
+.de-h{ font-size:1.0625rem; font-weight:600; margin:0 0 .3rem; max-width:none; }
+.de-p{ font-size:.9375rem; color:var(--graphit); line-height:1.6; margin:0; max-width:none; }
+
+/* ============ MHS log entry ============ */
+.cal{ display:flex; align-items:flex-end; gap:clamp(1rem,3vw,2rem); flex-wrap:wrap; margin:1.7rem 0 1.5rem; padding:0; }
+.cal .lead{ font-size:.6875rem; letter-spacing:.08em; text-transform:uppercase; color:var(--graphit); padding-bottom:1px; }
+.cal span:not(.lead){ font-family:var(--mono); font-size:.8125rem; color:var(--tinte); }
+.cal span:not(.lead)::before{
+  content:""; display:block; width:1px; height:9px; background:var(--graphit); margin:0 0 5px 1px;
+}
+
+/* ============ services rows ============ */
+.svc .content{ border-top:1px solid var(--raster-stark); padding-block:1.7rem 2rem; }
+.svc-head .content{ padding-block:clamp(2.75rem,6vw,4.25rem) 1.4rem; }
+.svc-cap .content{ padding-block:.9rem 2.6rem; }
+.idx{
+  font-family:var(--mono); font-size:.8125rem; font-weight:500; letter-spacing:.04em;
+  color:var(--graphit); margin-right:.7rem; position:relative; top:-1px;
+}
+.kick{
+  position:relative; display:flex; align-items:center; gap:.5rem; margin:0 0 .55rem;
+  font-family:var(--mono); font-size:.75rem; font-weight:500; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--blau);
+}
+.kick .arrow{
+  position:absolute; top:50%; left:calc(-1 * var(--gutter) + 4px);
+  width:calc(var(--gutter) - 12px); height:16px;
+  transform:translateY(-50%); color:var(--blau);
+}
+@media (max-width:720px){ .kick .arrow{ display:none; } }
+.badge{
+  display:inline-block; font-family:var(--mono); font-size:.6875rem; font-weight:500;
+  letter-spacing:.08em; text-transform:uppercase; color:var(--graphit);
+  border:1px solid var(--graphit); border-radius:2px; padding:1px 7px;
+}
+.flagnote{
+  display:flex; align-items:center; gap:.55rem; margin:.2rem 0 .8rem;
+  font-family:var(--mono); font-size:.75rem; letter-spacing:.02em; color:var(--rot); max-width:none;
+}
+.flagnote::before{ content:""; width:26px; border-top:1px dashed var(--rot); flex:none; }
+.foot{
+  font-family:var(--mono); font-size:.6875rem; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--graphit); margin:.9rem 0 0;
+}
+.svc-link{ font-family:var(--mono); font-size:.8125rem; letter-spacing:.02em; }
+.rowc::after{ content:""; display:block; clear:both; }
+.inset{ float:right; width:min(210px,42%); margin:0 0 .8rem 1.3rem; }
+@media (max-width:720px){
+  .inset{ float:none; width:100%; max-width:280px; margin:1.1rem 0 .3rem; }
+}
+.cap{ font-family:var(--mono); font-size:.75rem; letter-spacing:.02em; color:var(--graphit); margin:0; }
+
+/* ============ placeholder frames — reserved areas, drawn, labeled ============ */
+.frame{
+  position:relative; border:1px solid var(--raster-stark); background-color:var(--papier);
+  background-image:
+    linear-gradient(to top right, transparent calc(50% - .5px), var(--raster-stark) calc(50% - .5px), var(--raster-stark) calc(50% + .5px), transparent calc(50% + .5px)),
+    linear-gradient(to bottom right, transparent calc(50% - .5px), var(--raster-stark) calc(50% - .5px), var(--raster-stark) calc(50% + .5px), transparent calc(50% + .5px));
+}
+.frame .flabel{
+  position:absolute; left:8px; bottom:8px; max-width:calc(100% - 16px);
+  background:var(--papier); padding:3px 7px;
+  font-family:var(--mono); font-size:.6875rem; line-height:1.45; letter-spacing:.02em; color:var(--graphit);
+}
+.r43{ aspect-ratio:4/3; } .r34{ aspect-ratio:3/4; } .r1610{ aspect-ratio:16/10; }
+.r169{ aspect-ratio:16/9; } .sq{ aspect-ratio:1/1; }
+.frame .play{
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  width:52px; height:52px; color:var(--graphit);
+}
+.frame .prep{
+  position:absolute; top:calc(50% + 32px); left:50%; transform:translateX(-50%);
+  background:var(--papier); padding:2px 7px; width:max-content; max-width:calc(100% - 28px); text-align:center;
+  font-family:var(--mono); font-size:.6875rem; letter-spacing:.06em; text-transform:uppercase; color:var(--graphit);
+}
+
+/* ============ proof ============ */
+.proofgrid{
+  display:grid; grid-template-columns:minmax(0,1fr) 264px; gap:clamp(1.5rem,3vw,2.5rem);
+  align-items:start; margin:1.6rem 0 2.6rem;
+}
+.spec{ margin:0; }
+.spec > div{ border-top:1px solid var(--raster-stark); padding:.6rem 0 .65rem; }
+.spec dt{
+  font-family:var(--mono); font-size:.6875rem; font-weight:500; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--graphit);
+}
+.spec dd{ margin:.2rem 0 0; font-family:var(--mono); font-size:.8125rem; line-height:1.55; color:var(--tinte); }
+.recgrid{ display:grid; grid-template-columns:minmax(0,1fr) 190px; gap:clamp(1.5rem,3vw,2.5rem); align-items:start; }
+.records{ list-style:none; margin:.4rem 0 0; padding:0; }
+.records li{ border-top:1px solid var(--raster-stark); padding:.85rem 0; max-width:68ch; }
+.records li:last-child{ border-bottom:1px solid var(--raster-stark); }
+.records strong{ font-weight:600; }
+
+/* ============ lab notes ============ */
+.lngrid{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:clamp(1.75rem,4vw,3rem); align-items:start; margin-top:1.4rem; }
+.status{
+  display:flex; align-items:center; gap:.5rem; margin:0 0 .8rem;
+  font-family:var(--mono); font-size:.75rem; font-weight:500; letter-spacing:.04em; color:var(--blau); max-width:none;
+}
+.status::before{ content:""; width:8px; height:8px; border-radius:50%; background:var(--blau); flex:none; }
+
+/* ============ founder ============ */
+.fgrid{ display:grid; grid-template-columns:minmax(0,1fr) 264px; gap:clamp(1.75rem,4vw,3rem); align-items:start; margin-top:.4rem; }
+.inv{
+  border-top:1px solid var(--raster-stark); border-bottom:1px solid var(--raster-stark);
+  padding:.75rem 0; margin-top:1.6rem;
+  font-family:var(--mono); font-size:.75rem; letter-spacing:.03em; color:var(--graphit); max-width:none;
+}
+
+/* ============ contact ============ */
+.contact .content{ padding-block:clamp(3.25rem,8vw,5.5rem) clamp(3.5rem,8vw,6rem); }
+.contact h2{ font-size:clamp(1.75rem,4.5vw,2.5rem); }
+.todo{ margin:1.1rem 0 .35rem; font-family:var(--mono); font-size:.6875rem; letter-spacing:.03em; color:var(--graphit); max-width:none; }
+
+/* ============ footer — tear-off edge ============ */
+.tear{
+  height:13px;
+  background-color:var(--raster-fein);
+  background-image:
+    linear-gradient(135deg, var(--papier) 50%, transparent 50%),
+    linear-gradient(225deg, var(--papier) 50%, transparent 50%);
+  background-size:18px 13px;
+  background-position:top left;
+  background-repeat:repeat-x;
+}
+footer{ background:var(--raster-fein); }
+.foot-inner{ padding-block:2.2rem 2.6rem; }
+.foot-inner p{ max-width:none; margin:0 0 .55rem; font-family:var(--mono); font-size:.75rem; letter-spacing:.03em; color:var(--graphit); }
+.foot-inner .legal{ color:var(--tinte); }
+.foot-inner a{ color:var(--blau); }
+
+/* ============ responsive: two-column grids stack below 860px ============ */
+@media (max-width:860px){
+  .proofgrid{ grid-template-columns:minmax(0,1fr); }
+  .spec{ max-width:420px; }
+  .recgrid{ grid-template-columns:minmax(0,1fr); }
+  .recgrid .frame{ max-width:220px; }
+  .lngrid{ grid-template-columns:minmax(0,1fr); }
+  .fgrid{ grid-template-columns:minmax(0,1fr); }
+  .fgrid .frame{ max-width:260px; }
+}
+
+/* ============ motion — the trace always renders complete; only the live
+   recording cursor moves, and only when the reader allows motion ============ */
+@media (prefers-reduced-motion: no-preference){
+  .dot-pulse{ animation:pulse 2.6s ease-in-out infinite; }
+}
+@keyframes pulse{ 50%{ opacity:.4; } }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{ animation:none !important; transition:none !important; }
+  html{ scroll-behavior:auto; }
+}
+
+/* ============ fallback: plain pen line when SVG/grid can't render (print etc.) ============ */
+@media print{
+  main::before{ background-image:none; border-right:0; border-left:2px solid var(--blau); }
+  .trace,.mark,.flag{ display:none; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site">
+  <div class="wrap site-inner">
+    <a class="brand" href="#main">MDK Engineering</a>
+    <nav aria-label="Main">
+      <a href="#services">Services</a>
+      <a href="#proof">Proof</a>
+      <a href="#lab-notes">Lab Notes</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+  <!-- ============ hero — pen down ============ -->
+  <section class="hero" aria-labelledby="h-hero">
+    <div class="band">
+      <div class="seg" aria-hidden="true">
+        <svg class="trace" viewBox="0 0 64 100" preserveAspectRatio="none" focusable="false" aria-hidden="true">
+          <path class="draw" pathLength="1" d="M32 38 C32 46 27 54 29 62 C31 70 36 76 35 84 C34 92 32 95 32 100"/>
+        </svg>
+        <span class="mark dot" style="top:38%; left:50%;"></span>
+      </div>
+      <div class="content">
+        <p class="stamp">t+0 h &middot; pen down &middot; inoculation</p>
+        <h1 id="h-hero">We make European labs agent-ready.</h1>
+        <p class="lede">Open standards now let AI agents operate lab instruments. We make sure the agents understand the experiment — and that your lab stays safe while they work. The entry point: a fixed-scope, fixed-fee audit of your instrument fleet.</p>
+        <div class="cta-row">
+          <a class="btn" href="#contact">Book an agent-readiness conversation</a>
+          <a class="minor" href="#lab-notes">Read the first Lab Notes entry — in progress</a>
+        </div>
+        <p class="quiet">M&uuml;nchen &middot; independent &middot; building for the MHS era</p>
+        <div class="de" lang="de">
+          <span class="de-tag" lang="en">DE</span>
+          <p class="de-h">Wir machen europ&auml;ische Labore agentenf&auml;hig.</p>
+          <p class="de-p">Offene Standards machen Laborger&auml;te f&uuml;r KI-Agenten bedienbar. Wir sorgen daf&uuml;r, dass die Agenten das Experiment verstehen &ndash; und Ihr Labor dabei sicher bleibt. Der Einstieg: ein Audit Ihres Ger&auml;teparks, mit festem Umfang und festem Preis.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ the MHS moment — log entry ============ -->
+  <section class="sec" aria-labelledby="h-mhs">
+    <div class="band">
+      <div class="seg" aria-hidden="true">
+        <svg class="trace" viewBox="0 0 64 100" preserveAspectRatio="none" focusable="false" aria-hidden="true">
+          <path class="draw" pathLength="1" d="M32 0 C32 8 28 16 30 28 C32 40 37 48 35 60 C33 72 30 80 31 88 C31.5 94 32 96 32 100"/>
+        </svg>
+      </div>
+      <div class="content">
+        <p class="stamp">t+9 h &middot; log entry</p>
+        <h2 id="h-mhs">The standard arrived on 27 August 2026.</h2>
+        <p>Anthropic released the Model Hardware Standard as a research preview: an open, model-agnostic specification that lets AI agents discover and safely operate lab instruments. Liquid handlers, microscopes, robotic arms. Open-sourcing is planned.</p>
+        <p>The protocol layer is arriving. Your instrument fleet is where the work actually is: which devices can speak, which are orphaned behind a GUI, and which need a safety envelope before any agent may touch them.</p>
+        <div class="cal" role="list" aria-label="Standards we work with">
+          <span class="lead mono">working vocabulary</span>
+          <span role="listitem">MHS</span>
+          <span role="listitem">MCP</span>
+          <span role="listitem">SiLA 2</span>
+          <span role="listitem">OPC UA</span>
+        </div>
+        <p>MDK Engineering is independent of Anthropic. We build for the MHS era and are applying to the research preview.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ services — four channels ============ -->
+  <section class="sec" id="services" aria-labelledby="h-svc">
+    <div class="band svc-head">
+      <div class="seg" aria-hidden="true">
+        <svg class="trace" viewBox="0 0 64 100" preserveAspectRatio="none" focusable="false" aria-hidden="true">
+          <path class="draw" pathLength="1" d="M32 0 C32 12 35 30 34 50 C33 70 32 84 32 100"/>
+        </svg>
+      </div>
+      <div class="content">
+        <p class="stamp">t+24 h &middot; four channels</p>
+        <h2 id="h-svc">Four channels of work.</h2>
+      </div>
+    </div>
+
+    <div class="band svc">
+      <div class="seg" aria-hidden="true">
+        <svg class="trace" viewBox="0 0 64 100" preserveAspectRatio="none" focusable="false" aria-hidden="true">
+          <path class="draw" pathLength="1" d="M32 0 C32 10 29 22 30 38 C31 54 35 64 34 78 C33 90 32 94 32 100"/>
+        </svg>
+      </div>
+      <div class="content rowc">
+        <p class="kick">
+          <svg class="arrow" viewBox="0 0 40 16" aria-hidden="true" focusable="false">
+            <path d="M1 15 C12 15 19 8 32 8" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M27 4 L34 8 L27 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+          </svg>
+          start here &middot; fixed scope &middot; fixed fee
+        </p>
+        <h3><span class="idx">01</span>Agent-Readiness Audit</h3>
+        <p>We inventory your instrument fleet and report what is agent-operable today, what is orphaned behind a GUI or a legacy interface, and which safety envelopes are missing before an agent may run unattended.</p>
+        <p class="svc-link"><a href="#contact">Book the audit conversation &rarr;</a></p>
+      </div>
+    </div>
+
+    <div class="band svc">
+      <div class="seg" aria-hidden="true">
+        <svg class="trace" viewBox="0 0 64 100" preserveAspectRatio="none" focusable="false" aria-hidden="true">
+          <path class="draw" pathLength="1" d="M32 0 C32 8 36 20 35 36 C34 52 29 62 30 78 C31 90 32 94 32 100"/>
+        </svg>
+      </div>
+      <div class="content rowc">
+        <div class="inset">
+          <div class="frame r43">
+            <span class="flabel">PHOTO &middot; working shot &mdash; building a robot arm at the bench, Munich workshop</span>
+          </div>
+        </div>
+        <h3><span class="idx">02</span>Integration &amp; Enablement</h3>
+        <p>Long-tail and legacy instruments made operable in agentic workflows. Custom rigs are a specialty: when the vendor never planned for automation, we build the missing piece in our workshop.</p>
+        <p class="foot">gui-only &middot; legacy &middot; custom rigs</p>
+      </div>
+    </div>
+
+    <div class="band svc">
+      <div class="seg" aria-hidden="true">
+        <svg class="trace" viewBox="0 0 64 100" preserveAspectRatio="none" focusable="false" aria-hidden="true">
+          <path class="draw" pathLength="1" d="M32 0 C32 8 30 18 31 34 C32 50 36 62 34 80 C32.5 92 32 95 32 100"/>
+        </svg>
+      </div>
+      <div class="content rowc">
+        <div class="inset">
+          <div class="frame r34">
+            <span class="flabel">PHOTO &middot; working shot &mdash; operating the resin printer</span>
+          </div>
+        </div>
+        <h3><span class="idx">03</span>Safety &amp; Characterization</h3>
+        <p>Safety envelopes defined per device and verified by physical characterization on a real bench. Includes readiness for the EU Machinery Regulation, which applies from January 2027.</p>
+        <p class="foot">defined on paper &middot; verified on the bench</p>
+      </div>
+    </div>
+
+    <div class="band svc">
+      <div class="seg" aria-hidden="true">
+        <svg class="trace" viewBox="0 0 64 100" preserveAspectRatio="none" focusable="false" aria-hidden="true">
+          <path class="draw" pathLength="1" d="M32 0 C32 6 33 10 32 14 C30 20 19 22 17 28 C15 34 25 38 28 46 C32 54 33 58 32 66 C31 78 32 90 32 100"/>
+        </svg>
+        <span class="flag"></span>
+        <span class="mark ring" style="top:30.5%; left:26.5%;"></span>
+      </div>
+      <div class="content rowc">
+        <p class="kick" style="color:var(--graphit);"><span class="badge">pilot &middot; early access</span></p>
+        <h3><span class="idx">04</span>Intelligent Supervision</h3>
+        <p class="flagnote">t+61 h &middot; drift flagged &mdash; before the error code</p>
+        <p>A world-model layer that learns your process and flags failures before the error code fires. First target: long-running bioreactor cultures. Early-access pilot, honestly labeled.</p>
+      </div>
+    </div>
+
+    <div class="band svc-cap">
+      <div class="seg" aria-hidden="true">
+        <svg class="trace" viewBox="0 0 64 100" preserveAspectRatio="none" focusable="false" aria-hidden="true">
+          <path class="draw" pathLength="1" d="M32 0 C32 33 32 66 32 100"/>
+        </svg>
+      </div>
+      <div class="content">
+        <p class="cap">Dissolved-oxygen trace, schematic.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ proof — the flagship ============ -->
+  <section class="sec" id="proof" aria-labelledby="h-proof">
+    <div class="band">
+      <div class="seg" aria-hidden="true">
+        <svg class="trace" viewBox="0 0 64 100" preserveAspectRatio="none" focusable="false" aria-hidden="true">
+          <path class="draw" pathLength="1" d="M32 0 C32 10 28 20 29 36 C30 52 36 62 35 76 C34 88 32 93 32 100"/>
+        </svg>
+      </div>
+      <div class="content">
+        <p class="stamp">t+72 h &middot; reference build</p>
+        <h2 id="h-proof">Proof: micro-manipulation at 10&nbsp;&micro;m.</h2>
+        <p>A robotic system that picks and places ~10&nbsp;&micro;m diamond particles for optical quantum computing, built at the University of Oxford. At that scale adhesion beats gravity: the machine has to understand the physics, not just the coordinates.</p>
+        <div class="proofgrid">
+          <div class="frame r1610">
+            <span class="flabel">PHOTO &middot; project &mdash; micro-manipulation rig for ~10&nbsp;&micro;m diamond particles, University of Oxford. Recommended shot: full rig with microscope optics and stages visible</span>
+          </div>
+          <dl class="spec">
+            <div><dt>particle</dt><dd>&Oslash; ~10 &micro;m, diamond</dd></div>
+            <div><dt>regime</dt><dd>adhesion-dominated</dd></div>
+            <div><dt>stack</dt><dd>microscope optics &middot; precision stages &middot; learned control</dd></div>
+            <div><dt>site</dt><dd>University of Oxford</dd></div>
+          </dl>
+        </div>
+        <h3 class="lbl">Further records</h3>
+        <div class="recgrid">
+          <ul class="records">
+            <li><strong>Sensor-integrated bioreactor</strong> for tissue engineering, University of Oxford, research group of Prof. Pierre-Alexis Mouthuy.</li>
+            <li><strong>Foundation-model autonomy</strong> on the OpenArm humanoid platform, at Devanthro.</li>
+            <li><strong>Motionsports:</strong> a production AI agent for a German e-commerce company, run over a multi-year engagement. The software-reliability proof.</li>
+            <li><strong>ShareYourSpace:</strong> co-founded, sold to Pixida GmbH, 2026.</li>
+          </ul>
+          <div class="frame sq">
+            <span class="flabel">PHOTO &middot; project &mdash; sensor-integrated bioreactor, Mouthuy group, Oxford</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ lab notes — recording ============ -->
+  <section class="sec" id="lab-notes" aria-labelledby="h-ln">
+    <div class="band">
+      <div class="seg" aria-hidden="true">
+        <svg class="trace" viewBox="0 0 64 100" preserveAspectRatio="none" focusable="false" aria-hidden="true">
+          <path class="draw" pathLength="1" d="M32 0 C32 10 34 22 33 38 C32 54 30 66 31 80 C31.5 90 32 95 32 100"/>
+        </svg>
+        <span class="mark dot-pulse" style="top:56%; left:48.5%;"></span>
+      </div>
+      <div class="content">
+        <p class="stamp">t+96 h &middot; recording</p>
+        <h2 id="h-ln">Lab Notes.</h2>
+        <div class="lngrid">
+          <div>
+            <p class="status">status: recording &mdash; first write-up in progress</p>
+            <h3>LN-001 &middot; Micro-manipulation at 10&nbsp;&micro;m</h3>
+            <p>How the diamond-handling rig works, and what it taught us about agents in physical labs. No newsletter theater: entries appear when they are worth your time.</p>
+            <p class="quiet">LN-001 publishes on this page first.</p>
+          </div>
+          <div class="frame r169">
+            <svg class="play" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M8.5 5.5 L18 12 L8.5 18.5 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+            </svg>
+            <span class="prep">in preparation &middot; not yet shot</span>
+            <span class="flabel">VIDEO SLOT 16:9 &middot; planned demo &mdash; an agent operates an SO-101 robot arm and a bioreactor</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ founder — the workshop is real ============ -->
+  <section class="sec" id="about" aria-labelledby="h-about">
+    <div class="band">
+      <div class="seg" aria-hidden="true">
+        <svg class="trace" viewBox="0 0 64 100" preserveAspectRatio="none" focusable="false" aria-hidden="true">
+          <path class="draw" pathLength="1" d="M32 0 C32 8 30 20 31 36 C32 52 35 66 34 82 C33 92 32 96 32 100"/>
+        </svg>
+      </div>
+      <div class="content">
+        <p class="stamp">t+120 h &middot; operator</p>
+        <h2 id="h-about">The workshop is real.</h2>
+        <div class="fgrid">
+          <div>
+            <p>MDK Engineering is Marcel K&uuml;ck: computer science at TUM, software engineering at Siemens, humanoid robotics at Devanthro, and currently hands-on research at the University of Oxford on bioreactors and tissue engineering.</p>
+            <p>Small by design, in the Mittelstand tradition of the hidden champion: every project gets the founder, not a team you never meet.</p>
+            <p class="inv">workshop, m&uuml;nchen &mdash; FDM + resin printing &middot; CNC &middot; electronics / PCB bench &middot; robot-learning rigs (LeRobot)</p>
+          </div>
+          <div class="frame r34">
+            <span class="flabel">PHOTO &middot; founder portrait &mdash; Marcel K&uuml;ck at the electronics bench</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ contact — pen up ============ -->
+  <section class="sec contact" id="contact" aria-labelledby="h-contact">
+    <div class="band">
+      <div class="seg" aria-hidden="true">
+        <svg class="trace" viewBox="0 0 64 100" preserveAspectRatio="none" focusable="false" aria-hidden="true">
+          <path class="draw" pathLength="1" d="M32 0 C32 10 31 18 31.5 28 C32 36 32 39 32 42"/>
+        </svg>
+        <span class="mark dot-open" style="top:42%; left:50%;"></span>
+      </div>
+      <div class="content">
+        <p class="stamp">t+144 h &middot; pen up &middot; your lab from here</p>
+        <h2 id="h-contact">Book an agent-readiness conversation.</h2>
+        <p>Thirty minutes, technical, with the engineer who does the work. Send your instrument list ahead and we look at it before the call; you leave with a first read on what is agent-operable, what is orphaned, and where to start.</p>
+        <div class="cta-row">
+          <a class="btn" href="mailto:kontakt@mdkengineering.de?subject=Agent-readiness%20conversation">Book an agent-readiness conversation</a>
+        </div>
+        <p class="todo">booking: [TODO: booking link] &middot; until it is live, e-mail reaches the same engineer</p>
+        <p class="quiet"><a href="mailto:kontakt@mdkengineering.de">kontakt@mdkengineering.de</a></p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="tear" aria-hidden="true"></div>
+<footer>
+  <div class="wrap foot-inner">
+    <p class="legal">MDK Engineering &middot; Inhaber: Marcel K&uuml;ck</p>
+    <p><a href="#impressum" lang="de">Impressum</a> &middot; <a href="#datenschutz" lang="de">Datenschutzerkl&auml;rung</a> &middot; <a href="mailto:kontakt@mdkengineering.de">kontakt@mdkengineering.de</a> &middot; M&uuml;nchen</p>
+    <p>MDK Engineering is an independent engineering studio. Not affiliated with or endorsed by Anthropic.</p>
+    <p>&copy; 2026 MDK Engineering &middot; preview &mdash; Direction B, &bdquo;Linienschreiber&ldquo;</p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,604 @@
+<!--
+  Concept: Hüllkurve (Direction C)
+  Safety is MDK's declared value #1, and this direction makes it visible before a single sentence is read — the certified boundary becomes the brand, not a badge next to it.
+  Envelope outlines, interlock states and restrained marking geometry are the audience's own professional language (IEC 61010 benches, TÜV plates, machine guarding drawings); a head of lab automation recognizes it instantly and trusts it more than any AI iconography.
+  It is buildable in plain HTML/CSS, loads fast, stays quiet around real workshop photography and precise copy — and yields one screenshotable signature nobody else in the agentic-lab space is using.
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>MDK Engineering — Hüllkurve (Direction C preview)</title>
+<meta name="description" content="MDK Engineering, Munich: an independent engineering studio making European labs agent-ready. Instrument audits, integration, safety envelopes and supervision for the MHS era.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   HÜLLKURVE — token sheet
+   Accent law (hard budget, do not exceed):
+   - amber appears exactly twice on the page, both as hatch bands
+     (Zone 03 fragment, contact keyline); never as text, never as fill
+   - interlock green only as a filled dot beside an ink word
+   ============================================================ */
+:root{
+  --paper:    #F6F5F1;
+  --ink:      #16181A;
+  --steel:    #565E66;
+  --amber:    #E8A000;
+  --interlock:#1E7A46;
+  --hairline: #DDDAD2;
+  --bench:    #1D2124;
+  --paper-dim:#A9B1B8; /* secondary text on Bench only */
+  --sans: "Archivo","Helvetica Neue",Arial,sans-serif;
+  --mono: "IBM Plex Mono","SFMono-Regular",Menlo,Consolas,monospace;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font:400 17px/1.6 var(--sans);
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,.disp{font-stretch:110%;letter-spacing:-0.01em;line-height:1.05;font-weight:600;margin:0}
+h1{font-size:clamp(2.4rem,6vw,4.25rem)}
+h2{font-size:clamp(1.55rem,3.4vw,2.25rem);line-height:1.12}
+p{margin:0 0 1rem}
+a{color:inherit;text-decoration:underline;text-decoration-color:var(--steel);text-underline-offset:3px}
+a:hover{text-decoration-color:var(--ink)}
+:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.bench :focus-visible{outline-color:var(--paper)}
+
+.wrap{max-width:1140px;margin-inline:auto;padding-inline:clamp(1rem,4vw,2.5rem)}
+main section{margin-top:clamp(4.5rem,9vw,7.5rem)}
+section{scroll-margin-top:84px}
+
+.skip{
+  position:absolute;left:-999px;top:0;z-index:100;
+  background:var(--ink);color:var(--paper);
+  font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;
+  padding:10px 14px;text-decoration:none;
+}
+.skip:focus-visible{left:8px;top:8px}
+
+/* ---------- mono annotation layer ---------- */
+.mono, .stamp, .vocab, .strap, .env-note, .manifest, .dgm-cap{
+  font-family:var(--mono);
+}
+
+/* ---------- header ---------- */
+.site-head{
+  position:sticky;top:0;z-index:50;
+  background:var(--paper);
+  border-bottom:1px solid var(--hairline);
+}
+.head-row{
+  display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1.5rem;
+  padding-block:.85rem;
+}
+.wordmark{
+  font:500 13px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;
+  text-decoration:none;color:var(--ink);
+}
+.site-nav{margin-left:auto;display:flex;flex-wrap:wrap;gap:.35rem 1.35rem}
+.site-nav a{
+  font:400 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;
+  color:var(--steel);text-decoration:none;padding:.25rem 0;
+}
+.site-nav a:hover{color:var(--ink)}
+
+/* ============================================================
+   THE ENVELOPE — signature element
+   Three fittings on every certified boundary:
+   1. mono label breaking the top border (datum-tag manner)
+   2. four corner registration ticks outside the frame
+   3. state chip breaking the bottom border (honest states only)
+   ============================================================ */
+.env{
+  position:relative;
+  border:1.5px solid var(--ink);
+  background:var(--paper);
+}
+.env-label{
+  position:absolute;top:0;left:18px;transform:translateY(-50%);
+  z-index:2;background:var(--paper);padding:0 9px;margin:0;
+  font:500 11px/1.5 var(--mono);letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink);white-space:nowrap;
+}
+h3.env-label{font-size:12px}
+.env::before,.env::after,.ticks::before,.ticks::after{
+  content:"";position:absolute;width:10px;height:10px;pointer-events:none;
+}
+.env::before{top:-8px;left:-8px;border-top:1.5px solid var(--ink);border-left:1.5px solid var(--ink)}
+.env::after{bottom:-8px;right:-8px;border-bottom:1.5px solid var(--ink);border-right:1.5px solid var(--ink)}
+.ticks{position:absolute;inset:0;pointer-events:none}
+.ticks::before{top:-8px;right:-8px;border-top:1.5px solid var(--ink);border-right:1.5px solid var(--ink)}
+.ticks::after{bottom:-8px;left:-8px;border-bottom:1.5px solid var(--ink);border-left:1.5px solid var(--ink)}
+
+.chip{
+  position:absolute;bottom:0;right:16px;transform:translateY(50%);
+  z-index:2;background:var(--paper);padding:0 8px;
+  display:inline-flex;align-items:center;gap:7px;
+  font:500 11px/1.6 var(--mono);letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink);white-space:nowrap;
+}
+.chip::before{content:"";flex:none;width:8px;height:8px;border-radius:50%}
+.chip--go::before{background:var(--interlock)}                   /* operational state */
+.chip--hold::before{background:transparent;border:1.5px solid var(--ink);width:7px;height:7px} /* provisional state */
+
+/* ---------- placeholder frames (reserved-area convention) ---------- */
+figure{margin:0}
+.ph{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  padding:1rem;
+  background:
+    linear-gradient(45deg,transparent calc(50% - .75px),var(--hairline) calc(50% - .75px) calc(50% + .75px),transparent calc(50% + .75px)),
+    linear-gradient(-45deg,transparent calc(50% - .75px),var(--hairline) calc(50% - .75px) calc(50% + .75px),transparent calc(50% + .75px));
+}
+.ph-tag{
+  display:flex;flex-direction:column;gap:3px;text-align:center;
+  background:var(--paper);border:1px solid var(--hairline);
+  padding:9px 13px;max-width:94%;
+}
+.ph-tag .a{font:500 11px/1.5 var(--mono);letter-spacing:.05em;color:var(--ink)}
+.ph-tag .s{font:400 10.5px/1.5 var(--mono);letter-spacing:.03em;color:var(--steel)}
+.play{color:var(--ink)}
+
+/* ---------- hero ---------- */
+.hero{margin-top:clamp(2.25rem,5vw,3.5rem)}
+.env--hero{border:0;padding:clamp(1.4rem,4vw,3rem)}
+.env-draw{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:0}
+.env-draw rect{fill:none;stroke:var(--ink);stroke-width:1.5px;vector-effect:non-scaling-stroke}
+.env--hero > *:not(.env-draw){position:relative;z-index:1}
+.hero-grid{display:grid;gap:2.25rem;align-items:start}
+.strap{
+  font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--steel);margin:0 0 1.4rem;
+}
+.sub{max-width:34em;color:var(--ink);margin:1.4rem 0 1.8rem;font-size:1.0588em}
+.cta-row{display:flex;flex-wrap:wrap;align-items:center;gap:1rem 1.5rem;margin-bottom:.5rem}
+.btn{
+  display:inline-block;background:var(--ink);color:var(--paper);
+  border:1.5px solid var(--ink);text-decoration:none;text-align:center;
+  font:500 12px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;
+  padding:.95rem 1.45rem;
+}
+.btn:hover{background:var(--paper);color:var(--ink)}
+.quiet{font-weight:400;font-size:.98rem}
+.hero-ph{aspect-ratio:4/3}
+.hero-de{
+  border-top:1px solid var(--hairline);
+  margin-top:2.1rem;padding-top:1.2rem;
+  display:flex;gap:.9rem;align-items:baseline;flex-wrap:wrap;
+}
+.de-tag{
+  flex:none;font:500 10px/1 var(--mono);letter-spacing:.1em;
+  color:var(--steel);border:1px solid var(--steel);padding:3px 6px;
+  transform:translateY(-2px);
+}
+.hero-de div{max-width:56em}
+.de-head{font-weight:600;font-size:1.02rem;line-height:1.35;margin:0 0 .25rem}
+.de-sub{color:var(--steel);font-size:.88rem;line-height:1.55;margin:0}
+.env-note{
+  margin:1.6rem 0 0;max-width:60em;
+  font-size:11px;font-weight:400;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--steel);line-height:1.7;
+}
+@media (min-width:880px){
+  .hero-grid{grid-template-columns:1.15fr .85fr;gap:3rem}
+  .hero-ph{margin-top:.5rem}
+}
+
+/* ---------- MHS section (deliberately unboxed) ---------- */
+.stamp{
+  font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--steel);margin:0 0 1rem;
+}
+.stamp::before{content:"";display:inline-block;width:8px;height:8px;background:var(--ink);margin-right:10px;transform:translateY(-1px)}
+.prose{max-width:62ch;margin-top:1.4rem}
+.prose p{margin-bottom:1.1rem}
+.vocab{
+  font-size:12px;font-weight:500;letter-spacing:.08em;
+  color:var(--steel);margin:2.2rem 0 0;
+}
+.dgm{
+  display:flex;align-items:center;gap:0;
+  margin:2.75rem 0 0;max-width:560px;
+}
+.d-agent{
+  flex:none;
+  font:500 11px/1.5 var(--mono);letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink);border:1.5px dashed var(--steel);padding:10px 12px;
+}
+.d-line{flex:1;min-width:44px;position:relative;border-top:1.5px solid var(--ink);align-self:center;margin-top:1px}
+.d-line::after{
+  content:"";position:absolute;right:-1px;top:-9px;width:3px;height:17px;background:var(--ink);
+}
+.d-port{
+  position:absolute;top:9px;left:50%;transform:translateX(-50%);
+  font:400 10px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;
+  color:var(--steel);white-space:nowrap;
+}
+.d-env{display:inline-flex;align-items:center;gap:10px;padding:16px 16px}
+.d-env .env-label{left:12px;font-size:10px}
+.d-word{font:500 11px/1.5 var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.dgm-cap{
+  font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--steel);margin:1.4rem 0 0;max-width:60em;line-height:1.7;
+}
+
+/* ---------- services / zones ---------- */
+.sec-intro{color:var(--steel);max-width:56ch;margin:.9rem 0 0}
+.zones{display:grid;gap:2.9rem 2rem;margin-top:2.9rem}
+.zone{padding:2rem 1.6rem 1.8rem}
+.zone p{margin:0}
+.zone .zlink{display:inline-block;margin-top:1rem;font-weight:600;font-size:.95rem}
+.zone--audit{border-width:2.5px}
+.zone--audit::before,.zone--audit::after{border-width:2.5px}
+.zone--audit .ticks::before,.zone--audit .ticks::after{border-width:2.5px}
+/* hatch appearance 1 of 2 — Zone 03 fragment */
+.hatch-frag{
+  position:absolute;top:-3.5px;right:20px;width:48px;height:6px;z-index:2;
+  background:repeating-linear-gradient(-45deg,var(--amber) 0 8px,var(--ink) 8px 16px);
+}
+@media (min-width:880px){
+  .zones{grid-template-columns:1fr 1fr}
+}
+
+/* ---------- proof ---------- */
+.flag{margin-top:2.9rem;padding:clamp(1.4rem,3vw,2.25rem)}
+.flag-grid{display:grid;gap:2rem}
+.flag-ph{aspect-ratio:3/2}
+.flag h3{font-size:clamp(1.25rem,2.4vw,1.6rem);margin:0 0 .9rem}
+.spec{
+  list-style:none;margin:1.5rem 0 0;padding:0;
+  font:400 12px/1.5 var(--mono);letter-spacing:.04em;
+}
+.spec li{
+  display:flex;justify-content:space-between;gap:1rem;
+  border-top:1px solid var(--hairline);padding:.5rem 0;
+}
+.spec .k{color:var(--steel)}
+.spec .v{color:var(--ink);text-align:right}
+@media (min-width:880px){
+  .flag-grid{grid-template-columns:1.05fr 1fr;gap:2.5rem;align-items:start}
+}
+.records{margin-top:3.6rem}
+.records-kicker{
+  font:500 12px/1.5 var(--mono);letter-spacing:.08em;text-transform:uppercase;
+  color:var(--steel);margin:0 0 .4rem;
+}
+.rec-grid{display:grid;gap:2.5rem;margin-top:1rem}
+.rec-list{list-style:none;margin:0;padding:0}
+.rec-list li{border-top:1px solid var(--hairline);padding:1rem 0}
+.rec-list li:last-child{border-bottom:1px solid var(--hairline)}
+.rec-list b{font-weight:600}
+.rec-list span{display:block;color:var(--steel);font-size:.95rem;margin-top:.15rem}
+.bio-ph{aspect-ratio:1/1;max-width:280px}
+@media (min-width:880px){
+  .rec-grid{grid-template-columns:1fr 280px;align-items:start}
+}
+
+/* ---------- lab notes ---------- */
+.ln-grid{display:grid;gap:2.9rem 2rem;margin-top:2.9rem}
+.ln-card{padding:2rem 1.6rem 1.8rem}
+.ln-card p{margin:0}
+.ln-card .quiet{display:inline-block;margin-top:1rem}
+.video-ph{aspect-ratio:16/9;height:100%}
+@media (min-width:880px){
+  .ln-grid{grid-template-columns:1fr 1fr;align-items:stretch}
+}
+
+/* ---------- founder ---------- */
+.founder-grid{display:grid;gap:2.9rem;margin-top:2.9rem}
+.portrait-ph{aspect-ratio:4/5;max-width:320px}
+.founder-bio p{max-width:58ch}
+.resin-ph{aspect-ratio:3/2;max-width:460px;margin-top:2.4rem}
+.manifest{
+  font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--steel);margin:1.3rem 0 0;max-width:460px;line-height:1.8;
+}
+@media (min-width:880px){
+  .founder-grid{grid-template-columns:320px 1fr;gap:3.5rem;align-items:start}
+}
+
+/* ---------- contact (Bench) ---------- */
+/* hatch appearance 2 of 2 — full-width keyline into the bench strip */
+.hatch-keyline{
+  height:6px;margin-top:clamp(4.5rem,9vw,7.5rem);
+  background:repeating-linear-gradient(-45deg,var(--amber) 0 8px,var(--ink) 8px 16px);
+}
+.bench{background:var(--bench);color:var(--paper)}
+.contact{padding:clamp(3.5rem,7vw,5.5rem) 0 clamp(3rem,6vw,4.5rem);margin-top:0 !important}
+.contact h2{color:var(--paper);max-width:16em}
+.contact .lead{color:var(--paper-dim);max-width:54ch;margin:1.2rem 0 2rem}
+.btn--paper{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+.btn--paper:hover{background:var(--bench);color:var(--paper)}
+.contact-alt{
+  margin:1.6rem 0 0;
+  font:400 12px/1.8 var(--mono);letter-spacing:.05em;color:var(--paper-dim);
+}
+.contact-alt a{color:var(--paper);text-decoration-color:var(--paper-dim)}
+.todo-note{
+  margin:.4rem 0 0;
+  font:400 11.5px/1.8 var(--mono);letter-spacing:.04em;color:var(--paper-dim);
+}
+
+/* ---------- footer ---------- */
+.foot{border-top:1px solid #343A40;padding:2.4rem 0 2.8rem}
+.foot p, .foot nav{font:400 12px/1.9 var(--mono);letter-spacing:.05em}
+.foot-legal{color:var(--paper);margin:0 0 .35rem}
+.foot-nav{color:var(--paper-dim);margin:0 0 1.4rem}
+.foot-nav a{color:var(--paper);text-decoration-color:var(--paper-dim)}
+.foot-sep{color:var(--paper-dim);padding:0 .45rem}
+.foot-ind{
+  display:inline-block;color:var(--paper-dim);
+  border:1px solid #3A4046;padding:8px 12px;margin:0 0 1.2rem;
+}
+.foot-c{color:var(--paper-dim);margin:0}
+
+/* ---------- motion ---------- */
+@media (prefers-reduced-motion:no-preference){
+  .env-draw rect{stroke-dasharray:1;stroke-dashoffset:1;animation:env-draw 900ms ease-out 200ms forwards}
+  @keyframes env-draw{to{stroke-dashoffset:0}}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none !important;transition:none !important}
+}
+@media (max-width:360px){
+  .btn{font-size:11px;padding-inline:1rem}
+}
+</style>
+</head>
+<body id="top">
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-head">
+  <div class="wrap head-row">
+    <a class="wordmark" href="#top">MDK Engineering</a>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="#services">Services</a>
+      <a href="#proof">Proof</a>
+      <a href="#lab-notes">Lab Notes</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- HERO — operating envelope -->
+  <section class="hero wrap" aria-labelledby="hero-h">
+    <div class="env env--hero">
+      <svg class="env-draw" aria-hidden="true" focusable="false">
+        <rect x="0" y="0" width="100%" height="100%" pathLength="1"></rect>
+      </svg>
+      <span class="env-label">Operating envelope</span>
+      <i class="ticks" aria-hidden="true"></i>
+      <div class="hero-grid">
+        <div>
+          <p class="strap">MDK Engineering — Munich · Independent · Founder-led</p>
+          <h1 id="hero-h">We make European labs agent&#8209;ready.</h1>
+          <p class="sub">AI agents can now operate lab instruments. MDK Engineering makes them understand your experiment — and keeps every action inside a safety envelope engineered for each device. Senior work, from a real workshop in Munich.</p>
+          <div class="cta-row">
+            <a class="btn" href="#contact">Book an agent-readiness conversation</a>
+            <a class="quiet" href="#lab-notes">Read the first Lab Notes write-up</a>
+          </div>
+        </div>
+        <figure class="env ph hero-ph">
+          <span class="env-label">Photo — working shot</span>
+          <i class="ticks" aria-hidden="true"></i>
+          <figcaption class="ph-tag">
+            <span class="a">ASSET: WORKING SHOT — BUILDING THE ROBOT-LEARNING RIG</span>
+            <span class="s">SHOT: HANDS + LeRobot ARM AT THE BENCH, WARM LIGHT · 4:3</span>
+          </figcaption>
+          <span class="chip chip--go">In service</span>
+        </figure>
+      </div>
+      <div class="hero-de" lang="de">
+        <span class="de-tag" lang="en" aria-label="German version">DE</span>
+        <div>
+          <p class="de-head">Wir machen Europas Labore agent-ready.</p>
+          <p class="de-sub">KI-Agenten können inzwischen Laborgeräte bedienen. MDK Engineering sorgt dafür, dass sie Ihr Experiment verstehen – und sich an die Betriebsgrenzen halten, die wir für jedes Gerät definieren. Ingenieursarbeit aus einer echten Werkstatt in München.</p>
+        </div>
+      </div>
+    </div>
+    <p class="env-note">The frames on this page mark boundaries MDK engineers and stands behind — not a third-party approval.</p>
+  </section>
+
+  <!-- MHS — deliberately unboxed prose -->
+  <section class="wrap" aria-labelledby="mhs-h">
+    <p class="stamp">2026-08-27 — Anthropic releases the Model Hardware Standard (research preview)</p>
+    <h2 id="mhs-h">The standard changed on 27&nbsp;August&nbsp;2026.</h2>
+    <div class="prose">
+      <p>The Model Hardware Standard (MHS) is an open, model-agnostic specification that lets AI agents discover and safely operate lab instruments: liquid handlers, microscopes, robotic arms. Anthropic released it on 27 August 2026 as a research preview; open-sourcing is planned.</p>
+      <p>A safety envelope, in plain words: the set of limits inside which a device may act — travel, speed, temperature, pressure, duration. We define one for each instrument and enforce it in software and, where it matters, in hardware. That boundary is engineering we do and sign, not a certificate a third party grants. It is what every frame on this page means.</p>
+      <p>MDK Engineering is independent of Anthropic: no partnership, no preview access, no endorsement. We build for the MHS era and are applying to the research preview. The standard lets an agent operate the instrument; our work is making it understand the experiment, and deciding what it may never do to the device.</p>
+    </div>
+    <div class="dgm" role="img" aria-label="Diagram: an AI agent reaches an instrument only through a marked port in the safety envelope MDK engineers around the device.">
+      <span class="d-agent">AI agent</span>
+      <span class="d-line"><span class="d-port">Marked port</span></span>
+      <span class="env d-env">
+        <span class="env-label">Safety envelope</span>
+        <i class="ticks" aria-hidden="true"></i>
+        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M8.5 3h7M10.5 3v6l-5.5 10h14L13.5 9V3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+        </svg>
+        <span class="d-word">Instrument</span>
+      </span>
+    </div>
+    <p class="dgm-cap">The standard carries the commands. The envelope — engineered per device by MDK — decides which ones reach the instrument.</p>
+    <p class="vocab">WORKING VOCABULARY — MHS · MCP · SiLA 2 · OPC UA</p>
+  </section>
+
+  <!-- SERVICES — four zones -->
+  <section class="wrap" id="services" aria-labelledby="services-h">
+    <h2 id="services-h">Four zones of work.</h2>
+    <p class="sec-intro">Everything MDK offers fits in four marked zones. Most engagements start in Zone 01 and grow only where the audit shows cause.</p>
+    <div class="zones">
+      <article class="env zone zone--audit">
+        <h3 class="env-label">Zone 01 — Agent-Readiness Audit</h3>
+        <i class="ticks" aria-hidden="true"></i>
+        <p>Fixed scope, fixed fee. We inventory your instrument fleet, mark what is agent-operable today, what is orphaned behind a GUI, and where safety envelopes are missing. You get a map, not a pitch.</p>
+        <a class="zlink" href="#contact">Start with the audit</a>
+        <span class="chip chip--go">Open — entry point</span>
+      </article>
+      <article class="env zone">
+        <h3 class="env-label">Zone 02 — Integration &amp; Enablement</h3>
+        <i class="ticks" aria-hidden="true"></i>
+        <p>The long tail is the job. Legacy instruments, GUI-only devices, one-off rigs: we make them operable in agentic workflows, cleanly and reversibly. Custom rigs are a specialty, not an exception.</p>
+      </article>
+      <article class="env zone">
+        <h3 class="env-label">Zone 03 — Safety &amp; Characterization</h3>
+        <i class="ticks" aria-hidden="true"></i>
+        <span class="hatch-frag" aria-hidden="true"></span>
+        <p>Safety envelopes defined on paper and verified on a real bench in Munich. Physical characterization of the device as built, not as documented — and readiness for the EU Machinery Regulation, which applies from January 2027.</p>
+      </article>
+      <article class="env zone">
+        <h3 class="env-label">Zone 04 — Intelligent Supervision</h3>
+        <i class="ticks" aria-hidden="true"></i>
+        <p>A world-model layer that learns your process and flags failure before the error code fires. First target: long-running bioreactor cultures. An early-access pilot, honestly labeled; not a shipping product.</p>
+        <span class="chip chip--hold">Pilot</span>
+      </article>
+    </div>
+  </section>
+
+  <!-- PROOF -->
+  <section class="wrap" id="proof" aria-labelledby="proof-h">
+    <h2 id="proof-h">Built, not claimed.</h2>
+    <div class="env flag">
+      <span class="env-label">Flagship proof — University of Oxford</span>
+      <i class="ticks" aria-hidden="true"></i>
+      <div class="flag-grid">
+        <figure class="env ph flag-ph">
+          <span class="env-label">Photo — project</span>
+          <i class="ticks" aria-hidden="true"></i>
+          <figcaption class="ph-tag">
+            <span class="a">ASSET: PROJECT PHOTO — DIAMOND-HANDLING RIG, OXFORD</span>
+            <span class="s">SHOT: FULL RIG — MICROSCOPE OPTICS + PRECISION STAGES · 3:2</span>
+          </figcaption>
+        </figure>
+        <div>
+          <h3 class="disp">A robotic system that handles ~10&nbsp;µm diamond particles.</h3>
+          <p>Built at the University of Oxford for optical quantum computing. At ten micrometres, adhesion beats gravity: a particle clings to whatever touches it, and macro-scale intuition stops working. The rig combines microscope optics, precision stages and learned control to pick, move and place single diamond particles.</p>
+          <ul class="spec">
+            <li><span class="k">PARTICLE SIZE</span><span class="v">~10 µm</span></li>
+            <li><span class="k">REGIME</span><span class="v">ADHESION-DOMINATED</span></li>
+            <li><span class="k">OPTICS</span><span class="v">MICROSCOPE</span></li>
+            <li><span class="k">MOTION</span><span class="v">PRECISION STAGES</span></li>
+            <li><span class="k">CONTROL</span><span class="v">LEARNED</span></li>
+            <li><span class="k">SITE</span><span class="v">UNIVERSITY OF OXFORD</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="records">
+      <h3 class="records-kicker">Further records — no logos, no testimonials</h3>
+      <div class="rec-grid">
+        <ul class="rec-list">
+          <li><b>Sensor-integrated bioreactor for tissue engineering</b><span>University of Oxford, research group of Prof. Pierre-Alexis Mouthuy.</span></li>
+          <li><b>Foundation-model autonomy on the OpenArm humanoid platform</b><span>Devanthro.</span></li>
+          <li><b>Motionsports — production AI agent for a German e-commerce company</b><span>In service for years. The software-reliability record behind the lab work.</span></li>
+          <li><b>ShareYourSpace</b><span>Co-founded; sold to Pixida GmbH, 2026.</span></li>
+        </ul>
+        <figure class="env ph bio-ph">
+          <span class="env-label">Photo — project</span>
+          <i class="ticks" aria-hidden="true"></i>
+          <figcaption class="ph-tag">
+            <span class="a">ASSET: SENSOR-INTEGRATED BIOREACTOR, OXFORD</span>
+            <span class="s">SHOT: VESSEL + SENSOR LEADS · SQUARE CROP</span>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- LAB NOTES -->
+  <section class="wrap" id="lab-notes" aria-labelledby="ln-h">
+    <h2 id="ln-h">Lab Notes.</h2>
+    <p class="sec-intro">Notes from the bench, published when there is something to show.</p>
+    <div class="ln-grid">
+      <article class="env ln-card">
+        <h3 class="env-label">Lab Notes — 001</h3>
+        <i class="ticks" aria-hidden="true"></i>
+        <p>The first write-up is in progress: the Oxford diamond-handling system, from adhesion physics to learned control. No newsletter, no sign-up — entries appear here when they are worth your time.</p>
+        <a class="quiet" href="#contact">Ask about it in the conversation</a>
+        <span class="chip chip--hold">In progress</span>
+      </article>
+      <figure class="env ph video-ph">
+        <span class="env-label">Video slot — planned demo</span>
+        <i class="ticks" aria-hidden="true"></i>
+        <svg class="play" width="44" height="44" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+          <path d="M17 13 35 24 17 35 Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+        </svg>
+        <figcaption class="ph-tag">
+          <span class="a">ASSET (PLANNED): DEMO VIDEO — AGENT OPERATES SO-101 ARM + BIOREACTOR</span>
+          <span class="s">STATUS: PLANNED, NOT YET SHOT — NO FOOTAGE EXISTS · 16:9</span>
+        </figcaption>
+        <span class="chip chip--hold">Planned</span>
+      </figure>
+    </div>
+  </section>
+
+  <!-- FOUNDER -->
+  <section class="wrap" id="about" aria-labelledby="about-h">
+    <h2 id="about-h">The engineer you will work with.</h2>
+    <div class="founder-grid">
+      <figure class="env ph portrait-ph">
+        <span class="env-label">M. Kück — founder</span>
+        <i class="ticks" aria-hidden="true"></i>
+        <figcaption class="ph-tag">
+          <span class="a">ASSET: FOUNDER PORTRAIT — MARCEL KÜCK</span>
+          <span class="s">SHOT: AT THE ELECTRONICS BENCH · 4:5</span>
+        </figcaption>
+      </figure>
+      <div class="founder-bio">
+        <p>MDK Engineering is Marcel Kück. Computer science at TUM, software engineering at Siemens, humanoid robotics at Devanthro; currently hands-on research at the University of Oxford, on bioreactors and tissue engineering. The robot-learning rigs in the Munich workshop are self-built, on the LeRobot stack.</p>
+        <p>The studio is small by design, in the Mittelstand tradition — not a startup, not a freelancer. Every project is handled by the founder; there is no account team to route you through.</p>
+        <figure class="env ph resin-ph">
+          <span class="env-label">Photo — working shot</span>
+          <i class="ticks" aria-hidden="true"></i>
+          <figcaption class="ph-tag">
+            <span class="a">ASSET: WORKING SHOT — OPERATING THE RESIN PRINTER</span>
+            <span class="s">SHOT: OPEN PRINTER, PART IN HAND · 3:2</span>
+          </figcaption>
+          <span class="chip chip--go">In service</span>
+        </figure>
+        <p class="manifest">Workshop, Munich — FDM + resin printing · CNC · electronics / PCB bench · self-built robot-learning rigs (LeRobot)</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <div class="hatch-keyline" aria-hidden="true"></div>
+  <section class="bench contact" id="contact" aria-labelledby="contact-h">
+    <div class="wrap">
+      <h2 id="contact-h">Book an agent-readiness conversation.</h2>
+      <p class="lead">Thirty minutes, technical, with the engineer who does the work. Send your instrument list ahead and we read it before the call. You leave knowing what is agent-operable, what is orphaned, and what to do first.</p>
+      <a class="btn btn--paper" href="mailto:kontakt@mdkengineering.de?subject=Agent-readiness%20conversation">Book an agent-readiness conversation</a>
+      <p class="contact-alt">OR WRITE DIRECTLY — <a href="mailto:kontakt@mdkengineering.de">kontakt@mdkengineering.de</a></p>
+      <p class="todo-note">[TODO: booking link] — until the scheduler is live, e-mail books the same 30 minutes.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="bench foot">
+  <div class="wrap">
+    <p class="foot-legal">MDK Engineering · Inhaber: Marcel Kück · München</p>
+    <nav class="foot-nav" aria-label="Legal">
+      <a href="#impressum">Impressum</a><span class="foot-sep">·</span><a href="#datenschutz">Datenschutzerklärung</a><span class="foot-sep">·</span><a href="#lab-notes">Lab Notes</a><span class="foot-sep">·</span><a href="mailto:kontakt@mdkengineering.de">kontakt@mdkengineering.de</a>
+    </nav>
+    <p class="foot-ind">MDK Engineering is an independent engineering studio. Not affiliated with or endorsed by Anthropic.</p>
+    <p class="foot-c">© 2026 MDK Engineering</p>
+  </div>
+</footer>
+
+</body>
+</html>
